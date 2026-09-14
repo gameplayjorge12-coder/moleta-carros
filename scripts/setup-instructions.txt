@@ -1,0 +1,61 @@
+🚗 MOLETA CARROS — Setup Manual (5 min)
+
+============================================================
+
+1️⃣  SUPABASE SQL SCHEMA
+Acesso: https://app.supabase.com/project/npxqnedaaeuzitdiqgvd/sql
+
+Cole no SQL Editor e execute:
+
+---SQL SCHEMA---
+create table if not exists public.veiculos (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()),
+  titulo text not null,
+  preco numeric not null,
+  categoria text check (categoria in ('venda', 'aluguel')) not null default 'venda',
+  descricao text,
+  fotos text[] default '{}'::text[],
+  status text check (status in ('disponivel', 'vendido')) not null default 'disponivel',
+  views integer default 0
+);
+
+alter table public.veiculos enable row level security;
+
+create policy if not exists "Leitura publica" on public.veiculos
+for select using (true);
+
+create policy if not exists "Escrita Admin" on public.veiculos
+for all using (auth.role() = 'authenticated');
+
+create index if not exists veiculos_status_idx on public.veiculos(status);
+create index if not exists veiculos_categoria_idx on public.veiculos(categoria);
+---END SQL---
+
+✅ Clique Execute (botão azul)
+
+============================================================
+
+2️⃣  SUPABASE STORAGE BUCKET
+
+Acesso: https://app.supabase.com/project/npxqnedaaeuzitdiqgvd/storage/buckets
+
+• Clique em "New Bucket"
+• Name: veiculos
+• Public: ON (deixar checado)
+• Clique Create
+
+============================================================
+
+3️⃣  PRONTO! Agora rode:
+
+npm run dev
+
+Acesse:
+- Vitrine: http://localhost:3000
+- Admin: http://localhost:3000/admin
+
+Password: admin123
+
+============================================================

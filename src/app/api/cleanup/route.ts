@@ -33,8 +33,11 @@ export async function GET(request: Request) {
     );
   }
 
+  // Remove sslmode da string (senão sobrepõe o ssl abaixo e exige cert válido)
+  const cleanConn = conn.replace(/([?&])sslmode=[^&]+/g, '$1').replace(/[?&]$/, '');
+
   const client = new Client({
-    connectionString: conn,
+    connectionString: cleanConn,
     ssl: { rejectUnauthorized: false },
   });
 

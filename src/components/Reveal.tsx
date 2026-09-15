@@ -18,6 +18,11 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // Fallback: sem IntersectionObserver, revela na hora (nunca fica invisível)
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return;
+    }
     const obs = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {

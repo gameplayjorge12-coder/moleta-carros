@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
@@ -130,6 +131,14 @@ export default async function HomePage({
         <div className="max-w-7xl mx-auto text-center text-sm">
           <p>&copy; 2026 Moleta Carros. Todos os direitos reservados.</p>
           <p className="text-neutral-400 mt-2">Uraí, PR | WhatsApp: (43) 9978-4846</p>
+          <p className="mt-4">
+            <Link
+              href="/admin"
+              className="text-neutral-500 hover:text-primary text-xs underline underline-offset-4 transition-colors"
+            >
+              Painel do administrador
+            </Link>
+          </p>
         </div>
       </footer>
     </>

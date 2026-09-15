@@ -2,6 +2,7 @@ import { Header } from '@/components/Header';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { getWhatsAppSimpleLink } from '@/lib/whatsapp';
 
 /**
  * Homepage Pública — Vitrine de Carros
@@ -114,7 +115,7 @@ export default async function HomePage({
             Fale com Marcelo! Podemos ajudar você a encontrar exatamente o que você precisa.
           </p>
           <a
-            href="https://wa.me/5585987654321"
+            href={getWhatsAppSimpleLink()}
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary inline-flex items-center gap-2"
@@ -128,7 +129,7 @@ export default async function HomePage({
       <footer className="bg-neutral-900 text-white py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center text-sm">
           <p>&copy; 2026 Moleta Carros. Todos os direitos reservados.</p>
-          <p className="text-neutral-400 mt-2">Uraí, PR | Telefone: (85) 98765-4321</p>
+          <p className="text-neutral-400 mt-2">Uraí, PR | WhatsApp: (43) 9978-4846</p>
         </div>
       </footer>
     </>

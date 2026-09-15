@@ -1,0 +1,112 @@
+﻿[
+    {
+        "modelo":  "Renault Duster",
+        "id":  1,
+        "cor":  "Preto",
+        "ano":  2018,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-1.jpg",
+        "aluguel":  false,
+        "precoVenda":  52000
+    },
+    {
+        "modelo":  "Chevrolet Agile",
+        "id":  2,
+        "cor":  "Preto",
+        "ano":  2016,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-5.jpg",
+        "aluguel":  false,
+        "precoVenda":  38000
+    },
+    {
+        "modelo":  "Chevrolet Optra",
+        "id":  3,
+        "cor":  "Prata",
+        "ano":  2017,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-9.jpg",
+        "aluguel":  false,
+        "precoVenda":  42000
+    },
+    {
+        "modelo":  "Hyundai Creta",
+        "id":  4,
+        "cor":  "Branco",
+        "ano":  2019,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-13.jpg",
+        "aluguel":  false,
+        "precoVenda":  58000
+    },
+    {
+        "modelo":  "Ford Ka",
+        "id":  5,
+        "cor":  "Vermelho",
+        "ano":  2015,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-19.jpg",
+        "aluguel":  false,
+        "precoVenda":  36000
+    },
+    {
+        "modelo":  "Volkswagen Gol",
+        "id":  6,
+        "cor":  "Prata",
+        "ano":  2018,
+        "precoAluguel":  0,
+        "venda":  true,
+        "foto":  "venda-24.jpg",
+        "aluguel":  false,
+        "precoVenda":  44000
+    },
+    {
+        "modelo":  "Fiat Mobi",
+        "id":  7,
+        "cor":  "Branco",
+        "ano":  2020,
+        "precoAluguel":  150,
+        "venda":  false,
+        "foto":  "aluguel-1.jpg",
+        "aluguel":  true,
+        "precoVenda":  0
+    },
+    {
+        "modelo":  "Renault Kwid",
+        "id":  8,
+        "cor":  "Branco",
+        "ano":  2019,
+        "precoAluguel":  140,
+        "venda":  false,
+        "foto":  "aluguel-2.jpg",
+        "aluguel":  true,
+        "precoVenda":  0
+    },
+    {
+        "modelo":  "Volkswagen Voyage",
+        "id":  9,
+        "cor":  "Prata",
+        "ano":  2017,
+        "precoAluguel":  160,
+        "venda":  false,
+        "foto":  "aluguel-3.jpg",
+        "aluguel":  true,
+        "precoVenda":  0
+    },
+    {
+        "modelo":  "Renault Sandero",
+        "id":  10,
+        "cor":  "Preto",
+        "ano":  2018,
+        "precoAluguel":  155,
+        "venda":  false,
+        "foto":  "aluguel-4.jpg",
+        "aluguel":  true,
+        "precoVenda":  0
+    }
+]

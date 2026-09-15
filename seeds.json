@@ -1,0 +1,12 @@
+[
+  {"titulo":"Renault Duster Preto 2018","preco":52000,"categoria":"venda","descricao":"SUV robusta, ótimo estado","fotos":["https://moleta-carros.vercel.app/carros/venda-1.jpg"],"status":"disponivel"},
+  {"titulo":"Chevrolet Agile Preto 2016","preco":38000,"categoria":"venda","descricao":"Carro popular confiável","fotos":["https://moleta-carros.vercel.app/carros/venda-5.jpg"],"status":"disponivel"},
+  {"titulo":"Chevrolet Optra Prata 2017","preco":42000,"categoria":"venda","descricao":"Sedã confortável para família","fotos":["https://moleta-carros.vercel.app/carros/venda-9.jpg"],"status":"disponivel"},
+  {"titulo":"Hyundai Creta Branco 2019","preco":58000,"categoria":"venda","descricao":"SUV moderno com tecnologia","fotos":["https://moleta-carros.vercel.app/carros/venda-13.jpg"],"status":"disponivel"},
+  {"titulo":"Ford Ka Vermelho 2015","preco":36000,"categoria":"venda","descricao":"Carro econômico e ágil","fotos":["https://moleta-carros.vercel.app/carros/venda-19.jpg"],"status":"disponivel"},
+  {"titulo":"Volkswagen Gol Prata 2018","preco":44000,"categoria":"venda","descricao":"Clássico confiável","fotos":["https://moleta-carros.vercel.app/carros/venda-24.jpg"],"status":"disponivel"},
+  {"titulo":"Fiat Mobi Branco 2020","preco":150,"categoria":"aluguel","descricao":"Perfeito para aluguel curto","fotos":["https://moleta-carros.vercel.app/carros/aluguel-1.jpg"],"status":"disponivel"},
+  {"titulo":"Renault Kwid Branco 2019","preco":140,"categoria":"aluguel","descricao":"SUV econômico para aluguel","fotos":["https://moleta-carros.vercel.app/carros/aluguel-2.jpg"],"status":"disponivel"},
+  {"titulo":"Volkswagen Voyage Prata 2017","preco":160,"categoria":"aluguel","descricao":"Sedã espaçoso para viagens","fotos":["https://moleta-carros.vercel.app/carros/aluguel-3.jpg"],"status":"disponivel"},
+  {"titulo":"Renault Sandero Preto 2018","preco":155,"categoria":"aluguel","descricao":"Sedan confortável","fotos":["https://moleta-carros.vercel.app/carros/aluguel-4.jpg"],"status":"disponivel"}
+]

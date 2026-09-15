@@ -18,23 +18,37 @@ export async function PATCH(
     return NextResponse.json({ error: 'id inválido' }, { status: 400 });
   }
 
-  let status = '';
+  let body: any;
   try {
-    const body = await req.json();
-    status = body?.status ?? '';
+    body = await req.json();
   } catch {
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
   }
-  if (status !== 'disponivel' && status !== 'vendido') {
-    return NextResponse.json({ error: 'status inválido' }, { status: 400 });
+
+  const sets: string[] = [];
+  const vals: any[] = [];
+  let i = 1;
+
+  if (body?.status === 'disponivel' || body?.status === 'vendido') {
+    sets.push(`status = $${i++}`);
+    vals.push(body.status);
+  }
+  if (typeof body?.video_url === 'string') {
+    sets.push(`video_url = $${i++}`);
+    vals.push(body.video_url.trim() || null);
+  }
+
+  if (sets.length === 0) {
+    return NextResponse.json({ error: 'nada para atualizar' }, { status: 400 });
   }
 
   const client = pgClient();
   try {
     await client.connect();
+    vals.push(params.id);
     const r = await client.query(
-      `UPDATE public.veiculos SET status = $1, updated_at = now() WHERE id = $2`,
-      [status, params.id]
+      `UPDATE public.veiculos SET ${sets.join(', ')}, updated_at = now() WHERE id = $${i}`,
+      vals
     );
     await client.end();
     return NextResponse.json({ ok: true, atualizados: r.rowCount });

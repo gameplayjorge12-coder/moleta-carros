@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { Header } from '@/components/Header';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
@@ -16,10 +15,22 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 
 export const revalidate = 3600; // Revalidar a cada 1h
 
-async function VehicleList({ categoria }: { categoria: string }) {
-  const supabase = createServerSupabaseClient();
+interface SearchParams {
+  categoria?: string;
+}
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const categoria = searchParams.categoria || 'todos';
+
+  let vehicles: any[] = [];
+  let loadError = false;
 
   try {
+    const supabase = createServerSupabaseClient();
     let query = supabase
       .from('veiculos')
       .select('*')
@@ -30,31 +41,13 @@ async function VehicleList({ categoria }: { categoria: string }) {
       query = query.eq('categoria', categoria);
     }
 
-    const { data: vehicles, error } = await query;
-
+    const { data, error } = await query;
     if (error) throw error;
-
-    return <CarGrid vehicles={vehicles || []} />;
+    vehicles = data || [];
   } catch (error) {
     console.error('Erro ao buscar veículos:', error);
-    return (
-      <div className="text-center py-12">
-        <p className="text-neutral-600">Erro ao carregar veículos. Tente novamente.</p>
-      </div>
-    );
+    loadError = true;
   }
-}
-
-interface SearchParams {
-  categoria?: string;
-}
-
-export default function HomePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const categoria = searchParams.categoria || 'todos';
 
   return (
     <>
@@ -75,9 +68,7 @@ export default function HomePage({
           {/* Filtros */}
           <div className="mb-8">
             <h2 className="text-sm font-semibold text-neutral-600 mb-3">Filtrar por:</h2>
-            <Suspense fallback={<div className="h-12 bg-neutral-200 rounded-lg animate-pulse" />}>
-              <FilterTabs />
-            </Suspense>
+            <FilterTabs />
           </div>
         </div>
       </section>
@@ -93,20 +84,13 @@ export default function HomePage({
                 : 'Carros para Aluguel'}
           </h2>
 
-          <Suspense
-            fallback={
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-neutral-200 rounded-lg h-96 animate-pulse"
-                  />
-                ))}
-              </div>
-            }
-          >
-            <VehicleList categoria={categoria} />
-          </Suspense>
+          {loadError ? (
+            <div className="text-center py-12">
+              <p className="text-neutral-600">Erro ao carregar veículos. Tente novamente.</p>
+            </div>
+          ) : (
+            <CarGrid vehicles={vehicles} />
+          )}
         </div>
       </section>
 

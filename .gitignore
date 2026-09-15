@@ -26,6 +26,14 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
+
+# Scripts temporários de seed/admin (podem conter chaves)
+insert_carros*.py
+insert-carros*.mjs
+*.sr-key-temp
+.vercel-env-temp
 
 # IDE
 .idea/

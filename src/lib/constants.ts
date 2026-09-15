@@ -7,7 +7,7 @@ export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Moleta
-export const MARCELO_PHONE = '5585987654321'; // Número WhatsApp Marcelo
+export const MARCELO_PHONE = '554399784846'; // WhatsApp Marcelo (+55 43 9978-4846)
 export const COMPANY_NAME = 'Moleta Carros';
 export const COMPANY_LOCATION = 'Uraí, PR';
 

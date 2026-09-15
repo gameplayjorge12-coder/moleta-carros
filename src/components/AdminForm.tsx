@@ -5,10 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, Loader2, X } from 'lucide-react';
 import { VehicleSchema, type VehicleFormInput } from '@/lib/validation';
-import { createBrowserSupabaseClient } from '@/lib/supabase';
 import imageCompression from 'browser-image-compression';
 import { formatCurrency } from '@/lib/formatters';
-import { STORAGE_BUCKET } from '@/lib/constants';
 
 interface AdminFormProps {
   onSuccess?: () => void;
@@ -52,36 +50,27 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
     setCompressionError('');
 
     try {
-      const supabase = createBrowserSupabaseClient();
       const newPhotos: string[] = [];
 
       for (const file of Array.from(files)) {
-        // Compressão
-        const options = {
-          maxSizeMB: 0.2, // 200KB
+        // Compressão no browser (10MB -> ~200KB) antes de enviar
+        const compressedFile = await imageCompression(file, {
+          maxSizeMB: 0.2,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
-        };
+        });
 
-        const compressedFile = await imageCompression(file, options);
+        // Upload via rota server-side segura (chave secreta fica no servidor)
+        const fd = new FormData();
+        fd.append('file', compressedFile, file.name);
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Falha no upload');
 
-        // Upload
-        const filename = `${Date.now()}-${file.name}`;
-        const { data, error } = await supabase.storage
-          .from(STORAGE_BUCKET)
-          .upload(filename, compressedFile);
-
-        if (error) throw error;
-
-        // Gerar URL pública
-        const { data: publicUrl } = supabase.storage
-          .from(STORAGE_BUCKET)
-          .getPublicUrl(data.path);
-
-        newPhotos.push(publicUrl.publicUrl);
+        newPhotos.push(json.url);
       }
 
-      setUploadedPhotos([...uploadedPhotos, ...newPhotos]);
+      setUploadedPhotos((prev) => [...prev, ...newPhotos]);
     } catch (err) {
       setCompressionError(
         err instanceof Error ? err.message : 'Erro ao enviar imagem'
@@ -97,20 +86,20 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
     setIsSubmitting(true);
 
     try {
-      const supabase = createBrowserSupabaseClient();
+      const res = await fetch('/api/admin/vehicles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, fotos: uploadedPhotos }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        const msg =
+          typeof json.error === 'string'
+            ? json.error
+            : 'Não foi possível cadastrar';
+        throw new Error(msg);
+      }
 
-      // @ts-ignore
-      const { error } = await supabase.from('veiculos').insert([
-        // @ts-ignore
-        {
-          ...data,
-          fotos: uploadedPhotos,
-        },
-      ]);
-
-      if (error) throw error;
-
-      // Sucesso
       alert('✅ Veículo cadastrado com sucesso!');
       reset();
       setUploadedPhotos([]);

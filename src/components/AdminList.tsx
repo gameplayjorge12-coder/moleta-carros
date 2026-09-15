@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { Trash2, CheckCircle2, Clock } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/formatters';
-import { createBrowserSupabaseClient } from '@/lib/supabase';
 import { useState } from 'react';
 import type { Database } from '@/types/database';
 
@@ -26,13 +25,13 @@ export function AdminList({ vehicles, onUpdate }: AdminListProps) {
     setIsUpdating(vehicleId);
 
     try {
-      const supabase = createBrowserSupabaseClient() as any;
-      const { error } = await supabase
-        .from('veiculos')
-        .update({ status: 'vendido' })
-        .eq('id', vehicleId);
-
-      if (error) throw error;
+      const res = await fetch(`/api/admin/vehicles/${vehicleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'vendido' }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Falha ao atualizar');
 
       alert('✅ Marcado como vendido!');
       onUpdate?.();
@@ -49,13 +48,11 @@ export function AdminList({ vehicles, onUpdate }: AdminListProps) {
     setIsUpdating(vehicleId);
 
     try {
-      const supabase = createBrowserSupabaseClient();
-      const { error } = await supabase
-        .from('veiculos')
-        .delete()
-        .eq('id', vehicleId);
-
-      if (error) throw error;
+      const res = await fetch(`/api/admin/vehicles/${vehicleId}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Falha ao deletar');
 
       alert('✅ Veículo deletado!');
       onUpdate?.();

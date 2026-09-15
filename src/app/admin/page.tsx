@@ -50,20 +50,34 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação simples (em produção, usar Supabase Auth)
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD || password === 'admin123') {
+    try {
+      // Senha conferida no servidor; sessão vira cookie httpOnly
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (!res.ok) {
+        alert('❌ Senha incorreta');
+        return;
+      }
       localStorage.setItem('moleta-admin-authenticated', 'true');
       setIsAuthenticated(true);
       loadVehicles();
-    } else {
-      alert('❌ Senha incorreta');
+    } catch {
+      alert('❌ Erro ao entrar. Tente novamente.');
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch {
+      /* ignora */
+    }
     localStorage.removeItem('moleta-admin-authenticated');
     setIsAuthenticated(false);
     setPassword('');

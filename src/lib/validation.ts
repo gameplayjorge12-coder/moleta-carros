@@ -14,11 +14,11 @@ export const VehicleSchema = z.object({
     .max(100, 'Título máximo 100 caracteres')
     .trim(),
 
+  // 0 = "sob consulta" (valor combinado no WhatsApp)
   preco: z
     .number()
-    .min(1000, 'Preço mínimo R$ 1.000')
-    .max(1000000, 'Preço máximo R$ 1.000.000')
-    .positive('Preço deve ser positivo'),
+    .min(0, 'Preço inválido')
+    .max(1000000, 'Preço máximo R$ 1.000.000'),
 
   categoria: z
     .enum(['venda', 'aluguel'] as const)

@@ -42,16 +42,8 @@ const nextConfig = {
       },
     ];
   },
-  // Redirects (domínio futuro)
-  async redirects() {
-    return [
-      {
-        source: '/admin',
-        destination: '/admin/',
-        permanent: false,
-      },
-    ];
-  },
+  // (Redirect /admin -> /admin/ removido: criava loop infinito com o
+  //  trailingSlash padrão do Next, deixando o painel inacessível)
 };
 
 module.exports = nextConfig;

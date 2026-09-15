@@ -10,28 +10,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://moleta-carros.vercel.app'),
   title: 'Moleta Carros | Venda e Aluguel de Veículos em Uraí',
   description: 'Encontre o seu próximo carro com a Moleta Carros. Venda e aluguel de veículos de qualidade em Uraí, PR.',
   keywords: ['carros', 'venda', 'aluguel', 'locadora', 'Uraí', 'PR', 'veículos'],
   openGraph: {
     title: 'Moleta Carros',
-    description: 'Venda e aluguel de veículos de qualidade',
-    url: 'https://moleta-carros.com.br',
+    description: 'Venda e aluguel de veículos de qualidade em Uraí, PR',
+    url: 'https://moleta-carros.vercel.app',
     siteName: 'Moleta Carros',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-      },
-    ],
+    locale: 'pt_BR',
     type: 'website',
   },
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/manifest.json',
+  // favicon servido automaticamente por src/app/icon.svg
 };
 
 export default function RootLayout({
@@ -42,15 +33,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
       <head>
-        {/* Preload Critical Resources */}
-        <link rel="preload" as="image" href="/logo.svg" />
         <link rel="dns-prefetch" href="https://wa.me" />
-
-        {/* Vercel Analytics (if needed) */}
-        <script
-          defer
-          src="https://cdn.vercel-insights.com/v1/vitals.js"
-        />
       </head>
       <body className="bg-neutral-50 text-neutral-900 antialiased">
         <Providers>

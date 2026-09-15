@@ -13,7 +13,8 @@ import { createServerSupabaseClient } from '@/lib/supabase';
  * - Cada card tem foto + preço LARANJA + CTA WhatsApp
  */
 
-export const revalidate = 3600; // Revalidar a cada 1h
+// Sempre renderizar com estoque atual (admin adiciona carro -> aparece na hora)
+export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   categoria?: string;

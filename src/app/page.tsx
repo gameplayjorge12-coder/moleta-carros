@@ -43,7 +43,16 @@ export default async function HomePage({
 
     const { data, error } = await query;
     if (error) throw error;
-    vehicles = data || [];
+    // Só veículos com imagem no Supabase Storage (filtra seeds antigos de teste)
+    // + dedupe por título (evita duplicatas de inserts repetidos)
+    const seen = new Set<string>();
+    vehicles = (data || []).filter((v: any) => {
+      const foto = v.fotos?.[0] || '';
+      if (!foto.includes('/storage/v1/object/public/')) return false;
+      if (seen.has(v.titulo)) return false;
+      seen.add(v.titulo);
+      return true;
+    });
   } catch (error) {
     console.error('Erro ao buscar veículos:', error);
     loadError = true;

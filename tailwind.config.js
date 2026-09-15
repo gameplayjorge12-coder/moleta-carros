@@ -12,12 +12,14 @@ module.exports = {
       colors: {
         // Primária: LARANJA (urgência + ação)
         primary: {
+          DEFAULT: '#FF6B35', // ⭐ COR PRINCIPAL (bg-primary, text-primary)
+          dark: '#ff5a1f',    // primary-dark (hover)
           50: '#fff7f1',
           100: '#ffe8d6',
           200: '#ffd1ad',
           300: '#ffb384',
           400: '#ff9d5c',
-          500: '#FF6B35', // ⭐ COR PRINCIPAL
+          500: '#FF6B35',
           600: '#e55a2b',
           700: '#cc4922',
           800: '#b23818',
@@ -25,6 +27,7 @@ module.exports = {
         },
         // Secundária: AZUL (confiança + profissionalismo)
         secondary: {
+          DEFAULT: '#1e40af', // ⭐ AZUL ESCURO (bg-secondary, text-secondary)
           50: '#f0f4ff',
           100: '#e0e9fe',
           200: '#c1d3fd',
@@ -32,12 +35,13 @@ module.exports = {
           400: '#8da4f7',
           500: '#7b8bf2',
           600: '#5f6ee8',
-          700: '#1e40af', // ⭐ AZUL ESCURO
+          700: '#1e40af',
           800: '#1e3a8a',
           900: '#172554',
         },
         // Sucesso: VERDE (disponível, positivo)
         success: {
+          DEFAULT: '#10b981', // ⭐ VERDE (bg-success, text-success)
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -45,18 +49,19 @@ module.exports = {
           400: '#4ade80',
           500: '#22c55e',
           600: '#16a34a',
-          700: '#10b981', // ⭐ VERDE
+          700: '#10b981',
           800: '#166534',
           900: '#15803d',
         },
         // Perigo: VERMELHO (vendido, erro)
         danger: {
+          DEFAULT: '#ef4444', // ⭐ VERMELHO (bg-danger, text-danger)
           50: '#fef2f2',
           100: '#fee2e2',
           200: '#fecaca',
           300: '#fca5a5',
           400: '#f87171',
-          500: '#ef4444', // ⭐ VERMELHO
+          500: '#ef4444',
           600: '#dc2626',
           700: '#b91c1c',
           800: '#991b1b',

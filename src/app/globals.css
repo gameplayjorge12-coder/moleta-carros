@@ -60,7 +60,7 @@ body {
   }
 
   button {
-    @apply transition-all var(--duration-normal);
+    @apply transition-all duration-200;
   }
 }
 

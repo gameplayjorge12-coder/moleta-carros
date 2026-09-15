@@ -38,9 +38,12 @@ for (const vp of VIEWPORTS) {
     page.on('console', (m) => {
       if (m.type() === 'error') problems.consoleErrors.push(m.text().slice(0, 200));
     });
-    page.on('requestfailed', (r) =>
-      problems.failedRequests.push(`${r.method()} ${r.url().slice(0, 120)} — ${r.failure()?.errorText}`)
-    );
+    page.on('requestfailed', (r) => {
+      const err = r.failure()?.errorText || '';
+      // Ignora prefetch RSC do Next abortado por navegação (ruído, não é falha real)
+      if (r.url().includes('_rsc=') && err.includes('ERR_ABORTED')) return;
+      problems.failedRequests.push(`${r.method()} ${r.url().slice(0, 120)} — ${err}`);
+    });
     page.on('response', (r) => {
       if (r.status() >= 400) problems.badResponses.push(`${r.status()} ${r.url().slice(0, 120)}`);
     });

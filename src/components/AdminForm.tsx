@@ -20,6 +20,7 @@ interface AdminFormProps {
  */
 export function AdminForm({ onSuccess }: AdminFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
   const [compressionError, setCompressionError] = useState<string>('');
 
@@ -48,34 +49,61 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
     if (!files) return;
 
     setCompressionError('');
+    setIsUploading(true);
 
-    try {
-      const newPhotos: string[] = [];
+    const newPhotos: string[] = [];
+    const falhas: string[] = [];
 
-      for (const file of Array.from(files)) {
-        // Compressão no browser (10MB -> ~200KB) antes de enviar
-        const compressedFile = await imageCompression(file, {
+    for (const original of Array.from(files)) {
+      try {
+        let file: Blob = original;
+
+        // 1. iPhone salva em HEIC/HEIF — converter p/ JPEG antes (senão falha calada)
+        const isHeic =
+          /\.(heic|heif)$/i.test(original.name) ||
+          original.type === 'image/heic' ||
+          original.type === 'image/heif';
+        if (isHeic) {
+          const heic2any = (await import('heic2any')).default as any;
+          file = (await heic2any({ blob: original, toType: 'image/jpeg', quality: 0.9 })) as Blob;
+        }
+
+        // 2. Comprimir sempre no browser (mira 200KB, máx 1920px)
+        const compressed = await imageCompression(file as File, {
           maxSizeMB: 0.2,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
         });
 
-        // Upload via rota server-side segura (chave secreta fica no servidor)
+        // 3. Guarda contra o limite de 4.5MB da Vercel (nunca deve bater, mas garante)
+        if (compressed.size > 4 * 1024 * 1024) {
+          throw new Error('imagem muito grande mesmo após compressão');
+        }
+
+        // 4. Upload via rota server-side segura (chave secreta fica no servidor)
+        const nomeJpg = original.name.replace(/\.(heic|heif)$/i, '.jpg');
         const fd = new FormData();
-        fd.append('file', compressedFile, file.name);
+        fd.append('file', compressed, nomeJpg);
         const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || 'Falha no upload');
+        if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
 
         newPhotos.push(json.url);
+      } catch (err) {
+        falhas.push(
+          `${original.name}: ${err instanceof Error ? err.message : 'erro'}`
+        );
       }
+    }
 
-      setUploadedPhotos((prev) => [...prev, ...newPhotos]);
-    } catch (err) {
+    if (newPhotos.length) setUploadedPhotos((prev) => [...prev, ...newPhotos]);
+    if (falhas.length) {
       setCompressionError(
-        err instanceof Error ? err.message : 'Erro ao enviar imagem'
+        `Não deu pra enviar ${falhas.length} foto(s): ${falhas.join(' | ')}. Tente outra imagem.`
       );
     }
+    setIsUploading(false);
+    e.target.value = ''; // permite reenviar o mesmo arquivo
   };
 
   const removePhoto = (index: number) => {
@@ -195,17 +223,26 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
           <input
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             onChange={handleImageUpload}
             className="hidden"
             id="photo-upload"
-            disabled={isSubmitting || uploadedPhotos.length >= 10}
+            disabled={isSubmitting || isUploading || uploadedPhotos.length >= 10}
           />
           <label htmlFor="photo-upload" className="cursor-pointer flex flex-col items-center gap-2">
-            <Upload className="w-6 h-6 text-neutral-400" />
-            <span className="text-sm text-neutral-600">
-              Clique para enviar ou arrastar fotos
-            </span>
+            {isUploading ? (
+              <>
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <span className="text-sm text-neutral-600">Enviando fotos...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-6 h-6 text-neutral-400" />
+                <span className="text-sm text-neutral-600">
+                  Clique para enviar (aceita foto de iPhone)
+                </span>
+              </>
+            )}
           </label>
         </div>
 
@@ -242,7 +279,7 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       {/* Botão Submit */}
       <button
         type="submit"
-        disabled={isSubmitting || uploadedPhotos.length === 0}
+        disabled={isSubmitting || isUploading || uploadedPhotos.length === 0}
         className="btn-primary w-full flex items-center justify-center gap-2"
       >
         {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}

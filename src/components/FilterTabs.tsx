@@ -14,7 +14,7 @@ export function FilterTabs() {
   const categories = [
     { value: 'todos', label: 'Todos' },
     { value: 'venda', label: '🚗 Venda' },
-    { value: 'aluguel', label: '🔑 Locadora (4)' },
+    { value: 'aluguel', label: '🔑 Locadora' },
   ] as const;
 
   const handleCategoryChange = (category: string) => {

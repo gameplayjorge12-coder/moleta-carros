@@ -47,3 +47,6 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Screenshots da ferramenta de inspeção visual (scripts/shot.mjs)
+/screenshots

@@ -6,8 +6,9 @@
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// Moleta
-export const MARCELO_PHONE = '554399784846'; // WhatsApp Marcelo (+55 43 9978-4846)
+// Moleta — WhatsApp Marcelo. Padrão BR celular = 13 dígitos (55 + DDD + 9 dígitos).
+// Corrigido com o 9º dígito. ⚠️ CONFIRMAR clicando no botão que chega no Marcelo.
+export const MARCELO_PHONE = '5543999784846'; // +55 43 9 9978-4846
 export const COMPANY_NAME = 'Moleta Carros';
 export const COMPANY_LOCATION = 'Uraí, PR';
 

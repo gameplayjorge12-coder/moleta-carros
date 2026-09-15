@@ -14,6 +14,14 @@ export function formatCurrency(value: number): string {
 }
 
 /**
+ * Rótulo de preço: "Sob consulta" quando 0 (valor combinado no WhatsApp),
+ * senão o valor formatado em R$.
+ */
+export function priceLabel(value: number): string {
+  return value > 0 ? formatCurrency(value) : 'Sob consulta';
+}
+
+/**
  * Formata data para pt-BR
  */
 export function formatDate(date: Date | string): string {

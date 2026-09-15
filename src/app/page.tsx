@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
+import { TrustBar } from '@/components/TrustBar';
+import { SobreSection } from '@/components/SobreSection';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
 import { createServerSupabaseClient } from '@/lib/supabase';
@@ -72,6 +74,8 @@ export default async function HomePage({
 
       <Hero featured={featured} />
 
+      <TrustBar />
+
       {/* Vitrine */}
       <section id="vitrine" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 scroll-mt-16">
         <div className="max-w-7xl mx-auto">
@@ -101,6 +105,8 @@ export default async function HomePage({
           )}
         </div>
       </section>
+
+      <SobreSection />
 
       {/* CTA Rodapé */}
       <section className="bg-primary/10 py-12 sm:py-16 px-4 sm:px-6 lg:px-8">

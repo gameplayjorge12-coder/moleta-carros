@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Trash2, CheckCircle2, Clock } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/formatters';
+import { priceLabel, formatDate } from '@/lib/formatters';
 import { useState } from 'react';
 import type { Database } from '@/types/database';
 
@@ -99,7 +99,7 @@ export function AdminList({ vehicles, onUpdate }: AdminListProps) {
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-sm truncate">{vehicle.titulo}</h3>
             <p className="text-primary font-bold text-sm">
-              {formatCurrency(vehicle.preco)}
+              {priceLabel(vehicle.preco)}
             </p>
             <p className="text-xs text-neutral-500">
               {formatDate(vehicle.created_at)}

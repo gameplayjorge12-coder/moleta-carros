@@ -18,6 +18,7 @@ export type Database = {
           fotos: string[]; // URLs das imagens no Supabase Storage
           status: 'disponivel' | 'vendido';
           views: number; // Contador de visualizações
+          video_url: string | null; // Vídeo do modelo em movimento (YouTube ou mp4)
         };
         Insert: Omit<Database['public']['Tables']['veiculos']['Row'], 'id' | 'created_at' | 'updated_at' | 'views'>;
         Update: Partial<Database['public']['Tables']['veiculos']['Insert']>;

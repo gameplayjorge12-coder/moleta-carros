@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, MapPin, MessageCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { CarGallery } from '@/components/CarGallery';
+import { CarVideo } from '@/components/CarVideo';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { formatCurrency, categoriaLabel } from '@/lib/formatters';
 import { getWhatsAppLink } from '@/lib/whatsapp';
@@ -80,6 +81,19 @@ export default async function CarroPage({ params }: { params: { id: string } }) 
             </p>
           </div>
         </div>
+
+        {/* Vídeo do modelo em movimento (quando houver) */}
+        {v.video_url && (
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold text-secondary mb-4">
+              Veja em movimento
+            </h2>
+            <CarVideo url={v.video_url} />
+            <p className="text-xs text-neutral-500 mt-2">
+              Vídeo ilustrativo do modelo. O veículo à venda é o das fotos acima.
+            </p>
+          </section>
+        )}
       </main>
 
       <footer className="bg-neutral-900 text-white py-8 px-4 mt-10 text-center text-sm">

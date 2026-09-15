@@ -39,6 +39,7 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       descricao: '',
       fotos: [],
       status: 'disponivel',
+      video_url: '',
     },
   });
 
@@ -212,6 +213,26 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
         />
         {errors.descricao && (
           <p className="text-danger text-sm mt-1">{errors.descricao.message}</p>
+        )}
+      </div>
+
+      {/* Vídeo (opcional) */}
+      <div>
+        <label className="block text-sm font-semibold text-neutral-700 mb-2">
+          Link do vídeo (opcional)
+        </label>
+        <input
+          type="url"
+          {...register('video_url')}
+          placeholder="Cole um link do YouTube (opcional)"
+          className="w-full px-4 py-2 border border-neutral-300 rounded-lg input-focus"
+          disabled={isSubmitting}
+        />
+        <p className="text-xs text-neutral-500 mt-1">
+          Vídeo do modelo em movimento. Deixe vazio se não tiver.
+        </p>
+        {errors.video_url && (
+          <p className="text-danger text-sm mt-1">{errors.video_url.message}</p>
         )}
       </div>
 

@@ -38,6 +38,13 @@ export const VehicleSchema = z.object({
   status: z
     .enum(['disponivel', 'vendido'] as const)
     .default('disponivel'),
+
+  // Vídeo opcional (YouTube ou mp4) — vazio = sem vídeo
+  video_url: z
+    .string()
+    .url('Link de vídeo inválido')
+    .optional()
+    .or(z.literal('')),
 });
 
 export type VehicleFormInput = z.infer<typeof VehicleSchema>;

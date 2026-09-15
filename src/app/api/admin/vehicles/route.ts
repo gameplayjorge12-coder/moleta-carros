@@ -30,10 +30,11 @@ export async function POST(req: Request) {
   const client = pgClient();
   try {
     await client.connect();
+    const videoUrl = v.video_url && v.video_url.trim() ? v.video_url.trim() : null;
     const r = await client.query(
-      `INSERT INTO public.veiculos (titulo, preco, categoria, descricao, fotos, status)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-      [v.titulo, v.preco, v.categoria, v.descricao, v.fotos, v.status]
+      `INSERT INTO public.veiculos (titulo, preco, categoria, descricao, fotos, status, video_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [v.titulo, v.preco, v.categoria, v.descricao, v.fotos, v.status, videoUrl]
     );
     await client.end();
     return NextResponse.json({ ok: true, id: r.rows[0].id });

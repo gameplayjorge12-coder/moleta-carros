@@ -194,6 +194,7 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
         >
           <option value="venda">🚗 Venda</option>
           <option value="aluguel">🔑 Aluguel/Locadora</option>
+          <option value="ambos">🚗🔑 Venda e Aluguel</option>
         </select>
       </div>
 

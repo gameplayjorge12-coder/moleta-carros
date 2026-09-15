@@ -13,7 +13,7 @@ export type Database = {
           updated_at: string;
           titulo: string;
           preco: number;
-          categoria: 'venda' | 'aluguel';
+          categoria: 'venda' | 'aluguel' | 'ambos';
           descricao: string | null;
           fotos: string[]; // URLs das imagens no Supabase Storage
           status: 'disponivel' | 'vendido';

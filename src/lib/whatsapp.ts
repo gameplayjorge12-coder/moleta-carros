@@ -19,10 +19,15 @@ import { MARCELO_PHONE } from './constants';
  */
 export function getWhatsAppLink(
   carTitle: string,
-  category: 'venda' | 'aluguel',
+  category: 'venda' | 'aluguel' | 'ambos',
   price?: number
 ): string {
-  const categoryLabel = category === 'venda' ? '🚗 Venda' : '🔑 Locadora';
+  const categoryLabel =
+    category === 'venda'
+      ? '🚗 Venda'
+      : category === 'aluguel'
+        ? '🔑 Locadora'
+        : '🚗🔑 Venda e Aluguel';
 
   let message = `Olá Marcelo! 👋\n\n`;
   message += `Vi o veículo "${carTitle}" (${categoryLabel}) no site da Moleta Carros`;

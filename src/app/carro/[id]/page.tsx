@@ -4,7 +4,7 @@ import { ArrowLeft, MapPin, MessageCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { CarGallery } from '@/components/CarGallery';
 import { createServerSupabaseClient } from '@/lib/supabase';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, categoriaLabel } from '@/lib/formatters';
 import { getWhatsAppLink } from '@/lib/whatsapp';
 import type { Database } from '@/types/database';
 
@@ -25,7 +25,7 @@ export default async function CarroPage({ params }: { params: { id: string } }) 
 
   const fotos = v.fotos ?? [];
   const wpp = getWhatsAppLink(v.titulo, v.categoria, v.preco);
-  const catLabel = v.categoria === 'venda' ? '🚗 Venda' : '🔑 Locadora';
+  const catLabel = categoriaLabel(v.categoria);
 
   return (
     <>

@@ -21,7 +21,7 @@ export const VehicleSchema = z.object({
     .max(1000000, 'Preço máximo R$ 1.000.000'),
 
   categoria: z
-    .enum(['venda', 'aluguel'] as const)
+    .enum(['venda', 'aluguel', 'ambos'] as const)
     .default('venda'),
 
   descricao: z

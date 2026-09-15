@@ -63,11 +63,13 @@ export default async function HomePage({
     allCars[0] ||
     null;
 
-  // Grid respeita o filtro de categoria
+  // Grid respeita o filtro de categoria — carro "ambos" aparece em venda E aluguel
   const vehicles =
     categoria === 'todos'
       ? allCars
-      : allCars.filter((v) => v.categoria === categoria);
+      : allCars.filter(
+          (v) => v.categoria === categoria || v.categoria === 'ambos'
+        );
 
   return (
     <>

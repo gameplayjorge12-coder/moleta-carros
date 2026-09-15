@@ -21,6 +21,14 @@ export function priceLabel(value: number): string {
   return value > 0 ? formatCurrency(value) : 'Sob consulta';
 }
 
+/** Rótulo da categoria (venda / aluguel / ambos). */
+export function categoriaLabel(categoria: string): string {
+  if (categoria === 'venda') return '🚗 Venda';
+  if (categoria === 'aluguel') return '🔑 Locadora';
+  if (categoria === 'ambos') return '🚗🔑 Venda e Aluguel';
+  return categoria;
+}
+
 /**
  * Formata data para pt-BR
  */

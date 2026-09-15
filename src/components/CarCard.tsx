@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin, MessageCircle, Camera, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
-import { priceLabel } from '@/lib/formatters';
+import { priceLabel, categoriaLabel } from '@/lib/formatters';
 import { getWhatsAppLink } from '@/lib/whatsapp';
 import type { Database } from '@/types/database';
 
@@ -28,7 +28,7 @@ export function CarCard({ vehicle, index = 0 }: CarCardProps) {
   const mainPhoto = vehicle.fotos?.[0];
   const photoCount = vehicle.fotos?.length ?? 0;
   const isSoldOut = vehicle.status === 'vendido';
-  const categoryLabel = vehicle.categoria === 'venda' ? '🚗 Venda' : '🔑 Locadora';
+  const categoryLabel = categoriaLabel(vehicle.categoria);
   const whatsappLink = getWhatsAppLink(vehicle.titulo, vehicle.categoria, vehicle.preco);
   const href = `/carro/${vehicle.id}`;
 

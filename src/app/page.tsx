@@ -1,18 +1,16 @@
 import Link from 'next/link';
 import { Header } from '@/components/Header';
+import { Hero } from '@/components/Hero';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { getWhatsAppSimpleLink } from '@/lib/whatsapp';
 
 /**
- * Homepage Pública — Vitrine de Carros
- *
- * Mobile-first:
- * - Header sticky com WhatsApp CTA
- * - Filtros Venda/Aluguel
- * - Grid de carros (fade-in ao scroll)
- * - Cada card tem foto + preço LARANJA + CTA WhatsApp
+ * Homepage — Vitrine cinematográfica
+ * - Hero com veículo em destaque (RAV4)
+ * - Vitrine com filtros + grid
+ * Tudo leva pro WhatsApp (valor combinado direto com o Marcelo).
  */
 
 // Sempre renderizar com estoque atual (admin adiciona carro -> aparece na hora)
@@ -29,27 +27,21 @@ export default async function HomePage({
 }) {
   const categoria = searchParams.categoria || 'todos';
 
-  let vehicles: any[] = [];
+  let allCars: any[] = [];
   let loadError = false;
 
   try {
     const supabase = createServerSupabaseClient();
-    let query = supabase
+    const { data, error } = await supabase
       .from('veiculos')
       .select('*')
       .eq('status', 'disponivel')
       .order('created_at', { ascending: false });
-
-    if (categoria && categoria !== 'todos') {
-      query = query.eq('categoria', categoria);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
-    // Só veículos com imagem no Supabase Storage (filtra seeds antigos de teste)
-    // + dedupe por título (evita duplicatas de inserts repetidos)
+
+    // Só veículos com foto no Storage + dedupe por título
     const seen = new Set<string>();
-    vehicles = (data || []).filter((v: any) => {
+    allCars = (data || []).filter((v: any) => {
       const foto = v.fotos?.[0] || '';
       if (!foto.includes('/storage/v1/object/public/')) return false;
       if (seen.has(v.titulo)) return false;
@@ -61,40 +53,44 @@ export default async function HomePage({
     loadError = true;
   }
 
+  // Veículo em destaque (RAV4) — estável independente do filtro
+  const featured =
+    allCars.find((v) => /rav4/i.test(v.titulo)) ||
+    allCars.find((v) => v.categoria === 'venda') ||
+    allCars[0] ||
+    null;
+
+  // Grid respeita o filtro de categoria
+  const vehicles =
+    categoria === 'todos'
+      ? allCars
+      : allCars.filter((v) => v.categoria === categoria);
+
   return (
     <>
       <Header />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-b from-secondary/10 to-transparent py-8 sm:py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8 sm:mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-secondary mb-4">
-              Encontre seu próximo carro
-            </h1>
-            <p className="text-lg sm:text-xl text-neutral-700 max-w-2xl">
-              Venda e aluguel de veículos de qualidade em Uraí, PR. Seleção rigorosa e atendimento profissional.
-            </p>
-          </div>
+      <Hero featured={featured} />
 
-          {/* Filtros */}
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold text-neutral-600 mb-3">Filtrar por:</h2>
+      {/* Vitrine */}
+      <section id="vitrine" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 scroll-mt-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-secondary">
+                Nossa vitrine
+              </h2>
+              <p className="text-neutral-600 mt-1">
+                {vehicles.length} veículo{vehicles.length === 1 ? '' : 's'}{' '}
+                {categoria === 'venda'
+                  ? 'à venda'
+                  : categoria === 'aluguel'
+                    ? 'para locação'
+                    : 'disponíveis'}
+              </p>
+            </div>
             <FilterTabs />
           </div>
-        </div>
-      </section>
-
-      {/* Galeria de Carros */}
-      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-secondary mb-8">
-            {categoria === 'todos'
-              ? 'Todos os Veículos'
-              : categoria === 'venda'
-                ? 'Carros à Venda'
-                : 'Carros para Aluguel'}
-          </h2>
 
           {loadError ? (
             <div className="text-center py-12">

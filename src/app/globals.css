@@ -169,6 +169,40 @@ body {
   }
 }
 
+/* Ken Burns — zoom/pan lento cinematográfico (hero) */
+@keyframes kenburns {
+  0% {
+    transform: scale(1.03) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.16) translate(-1.5%, -1.5%);
+  }
+}
+
+@layer components {
+  .ken-burns {
+    animation: kenburns 22s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  /* Reveal ao entrar na viewport (usado com IntersectionObserver) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ken-burns {
+    animation: none;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════════════════════════════ */

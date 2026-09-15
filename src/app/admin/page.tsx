@@ -21,13 +21,24 @@ export default function AdminPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
 
-  // Verificar autenticação local
+  // Fonte da verdade = sessão no servidor (cookie httpOnly), não localStorage.
+  // Evita o painel abrir com sessão expirada e todas as ações darem 401.
   useEffect(() => {
-    const saved = localStorage.getItem('moleta-admin-authenticated');
-    if (saved === 'true') {
-      setIsAuthenticated(true);
-      loadVehicles();
-    }
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/me');
+        const { authed } = await res.json();
+        if (authed) {
+          setIsAuthenticated(true);
+          loadVehicles();
+        } else {
+          localStorage.removeItem('moleta-admin-authenticated');
+          setIsAuthenticated(false);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      }
+    })();
   }, []);
 
   // Carregar veículos

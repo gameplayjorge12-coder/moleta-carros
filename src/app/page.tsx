@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { TrustBar } from '@/components/TrustBar';
@@ -133,12 +134,12 @@ export default async function HomePage({
         <div className="max-w-7xl mx-auto text-center text-sm">
           <p>&copy; 2026 Moleta Carros. Todos os direitos reservados.</p>
           <p className="text-neutral-400 mt-2">Uraí, PR | WhatsApp: (43) 9978-4846</p>
-          <p className="mt-4">
+          <p className="mt-5">
             <Link
               href="/admin"
-              className="text-neutral-500 hover:text-primary text-xs underline underline-offset-4 transition-colors"
+              className="inline-flex items-center gap-2 bg-neutral-800 hover:bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
-              Painel do administrador
+              <Lock className="w-4 h-4" /> Área do lojista (login)
             </Link>
           </p>
         </div>

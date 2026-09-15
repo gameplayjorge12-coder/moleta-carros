@@ -50,3 +50,7 @@ Thumbs.db
 
 # Screenshots da ferramenta de inspeção visual (scripts/shot.mjs)
 /screenshots
+
+# Artefatos de teste (Playwright)
+/test-results
+/playwright-report

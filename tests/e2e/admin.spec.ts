@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('admin: login correto abre o painel', async ({ page }) => {
   await page.goto('/admin');
   await expect(page.getByText('Acessar Painel')).toBeVisible();
-  await page.fill('input[type=password]', 'admin123');
+  await page.fill('input[type=password]', 'moleta@2026');
   await page.click('button[type=submit]');
   await expect(page.getByText(/Estoque/).first()).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Cadastrar Veículo').first()).toBeVisible();

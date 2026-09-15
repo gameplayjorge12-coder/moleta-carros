@@ -28,11 +28,6 @@ export function CarCard({ vehicle, index = 0 }: CarCardProps) {
   const [imageError, setImageError] = useState(false);
 
   const mainPhoto = vehicle.fotos?.[0];
-  // Converter path relativo para URL absoluta se necessário
-  const imageUrl = mainPhoto && mainPhoto.startsWith('http')
-    ? mainPhoto
-    : (mainPhoto ? `https://moleta-carros.vercel.app${mainPhoto}` : null);
-
   const isSoldOut = vehicle.status === 'vendido';
   const categoryLabel = vehicle.categoria === 'venda' ? '🚗 Venda' : '🔑 Locadora';
   const whatsappLink = getWhatsAppLink(vehicle.titulo, vehicle.categoria, vehicle.preco);
@@ -44,9 +39,9 @@ export function CarCard({ vehicle, index = 0 }: CarCardProps) {
     >
       {/* Imagem com hover zoom */}
       <div className="relative h-48 sm:h-56 bg-neutral-100 overflow-hidden image-hover">
-        {imageUrl && !imageError ? (
+        {mainPhoto && !imageError ? (
           <Image
-            src={imageUrl}
+            src={mainPhoto}
             alt={vehicle.titulo}
             fill
             className="object-cover"

@@ -219,18 +219,28 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       {/* Vídeo (opcional) */}
       <div>
         <label className="block text-sm font-semibold text-neutral-700 mb-2">
-          Link do vídeo (opcional)
+          🎥 Vídeo do carro (opcional)
         </label>
         <input
           type="url"
           {...register('video_url')}
-          placeholder="Cole um link do YouTube (opcional)"
+          placeholder="Cole aqui o link do YouTube do vídeo"
           className="w-full px-4 py-2 border border-neutral-300 rounded-lg input-focus"
           disabled={isSubmitting}
         />
-        <p className="text-xs text-neutral-500 mt-1">
-          Vídeo do modelo em movimento. Deixe vazio se não tiver.
-        </p>
+        <div className="mt-2 text-xs text-neutral-600 bg-primary/5 border border-primary/20 rounded-lg p-3 leading-relaxed">
+          <strong className="text-neutral-800">Como colocar um vídeo do SEU carro:</strong>
+          <br />
+          1️⃣ Grave um vídeo curto (20–30s) do carro no celular
+          <br />
+          2️⃣ Suba no YouTube marcando como <strong>"Não listado"</strong>
+          <br />
+          3️⃣ Copie o link e cole aqui em cima
+          <br />
+          <span className="text-neutral-400">
+            Sem vídeo? Deixe em branco — as fotos já mostram bem o carro.
+          </span>
+        </div>
         {errors.video_url && (
           <p className="text-danger text-sm mt-1">{errors.video_url.message}</p>
         )}

@@ -18,6 +18,15 @@ describe('WhatsApp — número e links', () => {
     expect(getWhatsAppSimpleLink()).toContain('wa.me/5543999784846');
   });
 
+  it('mensagem é texto limpo, sem emoji (evita caractere quebrado no WhatsApp)', () => {
+    const msg = decodeURIComponent(
+      getWhatsAppLink('Toyota Corolla Preto', 'venda', 0).split('text=')[1]
+    );
+    expect(msg).toContain('(Venda)');
+    // nenhum caractere fora do range ASCII/latino comum (sem emoji)
+    expect(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(msg)).toBe(false);
+  });
+
   it('não usa mais o número placeholder antigo (Ceará)', () => {
     expect(getWhatsAppSimpleLink()).not.toContain('5585987654321');
   });

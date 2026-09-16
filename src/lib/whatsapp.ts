@@ -22,21 +22,21 @@ export function getWhatsAppLink(
   category: 'venda' | 'aluguel' | 'ambos',
   price?: number
 ): string {
+  // Texto limpo (sem emoji) — emoji corrompe no encode em alguns aparelhos
   const categoryLabel =
     category === 'venda'
-      ? '🚗 Venda'
+      ? 'Venda'
       : category === 'aluguel'
-        ? '🔑 Locadora'
-        : '🚗🔑 Venda e Aluguel';
+        ? 'Locadora'
+        : 'Venda e Aluguel';
 
-  let message = `Olá Marcelo! 👋\n\n`;
-  message += `Vi o veículo "${carTitle}" (${categoryLabel}) no site da Moleta Carros`;
+  let message = `Olá Marcelo! Vi o veículo "${carTitle}" (${categoryLabel}) no site da Moleta Carros.`;
 
   if (price) {
-    message += ` e adorei! 💯\n\n💰 Preço: R$ ${price.toLocaleString('pt-BR')}`;
+    message += ` Preço: R$ ${price.toLocaleString('pt-BR')}.`;
   }
 
-  message += `\n\nPoderia me passar mais informações? Gostaria de saber mais sobre esse carro! 🤔`;
+  message += ` Poderia me passar mais informações sobre esse carro?`;
 
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${MARCELO_PHONE}?text=${encodedMessage}`;
@@ -46,7 +46,7 @@ export function getWhatsAppLink(
  * Link simplificado (sem preço) para uso em CTAs gerais
  */
 export function getWhatsAppSimpleLink(): string {
-  const message = `Olá Marcelo! Vi o site da Moleta Carros e gostaria de conhecer os seus veículos. Qual o melhor horário para conversar? 👋`;
+  const message = `Olá Marcelo! Vi o site da Moleta Carros e gostaria de conhecer os seus veículos. Qual o melhor horário para conversar?`;
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${MARCELO_PHONE}?text=${encodedMessage}`;
 }

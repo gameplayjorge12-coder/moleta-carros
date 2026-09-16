@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Upload, Loader2, X } from 'lucide-react';
+import { Upload, Loader2, X, Video, CheckCircle2 } from 'lucide-react';
 import { VehicleSchema, type VehicleFormInput } from '@/lib/validation';
 import imageCompression from 'browser-image-compression';
 import { formatCurrency } from '@/lib/formatters';
+import { createBrowserSupabaseClient } from '@/lib/supabase';
 
 interface AdminFormProps {
   onSuccess?: () => void;
@@ -23,11 +24,15 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
   const [compressionError, setCompressionError] = useState<string>('');
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState('');
+  const [videoDone, setVideoDone] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
     watch,
   } = useForm<VehicleFormInput>({
@@ -109,6 +114,53 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
 
   const removePhoto = (index: number) => {
     setUploadedPhotos(uploadedPhotos.filter((_, i) => i !== index));
+  };
+
+  // Upload do vídeo DIRETO pro Supabase Storage (não passa pela Vercel = sem limite 4.5MB)
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.currentTarget.files?.[0];
+    if (!file) return;
+    setVideoError('');
+    setVideoDone(false);
+
+    if (!file.type.startsWith('video/')) {
+      setVideoError('Selecione um arquivo de vídeo.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      setVideoError('Vídeo muito grande (máx 50MB). Grave um vídeo mais curto (~20s) ou em qualidade menor.');
+      e.target.value = '';
+      return;
+    }
+
+    setVideoUploading(true);
+    try {
+      // 1. pede a URL assinada ao servidor
+      const res = await fetch('/api/admin/video-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Falha ao preparar upload');
+
+      // 2. sobe direto pro Storage (fura o limite da Vercel)
+      const supabase = createBrowserSupabaseClient();
+      const { error } = await supabase.storage
+        .from('veiculos')
+        .uploadToSignedUrl(json.path, json.token, file);
+      if (error) throw error;
+
+      // 3. grava a URL do vídeo no formulário
+      setValue('video_url', json.publicUrl, { shouldValidate: true });
+      setVideoDone(true);
+    } catch (err) {
+      setVideoError(err instanceof Error ? err.message : 'Erro ao enviar o vídeo');
+    } finally {
+      setVideoUploading(false);
+      e.target.value = '';
+    }
   };
 
   const onSubmit = async (data: VehicleFormInput) => {
@@ -241,6 +293,47 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
             Sem vídeo? Deixe em branco — as fotos já mostram bem o carro.
           </span>
         </div>
+
+        {/* OU enviar o vídeo direto do celular */}
+        <div className="mt-3">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1 h-px bg-neutral-200" />
+            <span className="text-xs text-neutral-400 font-semibold">OU</span>
+            <div className="flex-1 h-px bg-neutral-200" />
+          </div>
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleVideoUpload}
+            className="hidden"
+            id="video-upload"
+            disabled={isSubmitting || videoUploading}
+          />
+          <label
+            htmlFor="video-upload"
+            className={`flex items-center justify-center gap-2 w-full border-2 border-dashed rounded-lg py-3 cursor-pointer transition-colors ${
+              videoDone
+                ? 'border-success bg-success/5 text-success'
+                : 'border-neutral-300 hover:bg-neutral-50 text-neutral-600'
+            }`}
+          >
+            {videoUploading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Enviando vídeo...
+              </>
+            ) : videoDone ? (
+              <>
+                <CheckCircle2 className="w-5 h-5" /> Vídeo enviado! ✓
+              </>
+            ) : (
+              <>
+                <Video className="w-5 h-5" /> Enviar vídeo do celular (até 50MB)
+              </>
+            )}
+          </label>
+          {videoError && <p className="text-danger text-sm mt-1">{videoError}</p>}
+        </div>
+
         {errors.video_url && (
           <p className="text-danger text-sm mt-1">{errors.video_url.message}</p>
         )}

@@ -3,7 +3,7 @@
  * Conforme o Design System — mensagem pré-formatada com urgência
  */
 
-import { MARCELO_PHONE } from './constants';
+import { MARCELO_PHONE, COMPANY_ADDRESS } from './constants';
 
 /**
  * Gera URL do WhatsApp com mensagem pré-preenchida
@@ -49,6 +49,22 @@ export function getWhatsAppSimpleLink(): string {
   const message = `Olá Marcelo! Vi o site da Moleta Carros e gostaria de conhecer os seus veículos. Qual o melhor horário para conversar?`;
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${MARCELO_PHONE}?text=${encodedMessage}`;
+}
+
+/**
+ * Link do Google Maps para o pátio (sem chave de API, abre o app no celular).
+ */
+export function getMapsLink(): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(COMPANY_ADDRESS)}`;
+}
+
+/**
+ * CTA da oferta 0km — mensagem pré-pronta focada em CNPJ / produtor rural.
+ */
+export function getWhatsAppZeroKmLink(): string {
+  const message =
+    'Olá Marcelo! Vi no site a oferta de carro 0km com desconto para CNPJ / produtor rural (parceria Fiat). Pode me passar os valores e as condições?';
+  return `https://wa.me/${MARCELO_PHONE}?text=${encodeURIComponent(message)}`;
 }
 
 /**

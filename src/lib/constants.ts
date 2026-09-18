@@ -11,6 +11,8 @@ export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 export const MARCELO_PHONE = '5543999784846'; // +55 43 9 9978-4846
 export const COMPANY_NAME = 'Moleta Carros';
 export const COMPANY_LOCATION = 'Uraí, PR';
+// Endereço do pátio — usado no link "Como chegar" (Google Maps). Fonte: Marcelo (18/09/2026).
+export const COMPANY_ADDRESS = 'Moleta Veículos, Av. Paraná, 890, Uraí - PR, 86280-000';
 
 // Design System — Paleta Laranja
 export const COLORS = {

@@ -3,6 +3,7 @@ import { Lock } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { TrustBar } from '@/components/TrustBar';
+import { ZeroKmSection } from '@/components/ZeroKmSection';
 import { SobreSection } from '@/components/SobreSection';
 import { FilterTabs } from '@/components/FilterTabs';
 import { CarGrid } from '@/components/CarGrid';
@@ -78,6 +79,8 @@ export default async function HomePage({
       <Hero featured={featured} />
 
       <TrustBar />
+
+      <ZeroKmSection />
 
       {/* Vitrine */}
       <section id="vitrine" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 scroll-mt-16">

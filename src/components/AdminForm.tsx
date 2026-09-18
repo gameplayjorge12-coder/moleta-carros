@@ -1,25 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Upload, Loader2, X, Video, CheckCircle2 } from 'lucide-react';
+import { Upload, Loader2, X, Video, CheckCircle2, Star, ArrowLeft } from 'lucide-react';
 import { VehicleSchema, type VehicleFormInput } from '@/lib/validation';
 import imageCompression from 'browser-image-compression';
 import { formatCurrency } from '@/lib/formatters';
 import { createBrowserSupabaseClient } from '@/lib/supabase';
+import type { Database } from '@/types/database';
+
+type Vehicle = Database['public']['Tables']['veiculos']['Row'];
 
 interface AdminFormProps {
   onSuccess?: () => void;
+  /** Quando presente, o form entra em modo EDIÇÃO desse veículo. */
+  vehicle?: Vehicle | null;
+  /** Chamado ao cancelar/concluir a edição (para o pai sair do modo edição). */
+  onCancelEdit?: () => void;
 }
 
 /**
- * Formulário admin mobile-first para cadastro rápido
+ * Formulário admin mobile-first — cadastro E edição de veículo.
  * - Compressão de imagem no browser (10MB → 200KB)
  * - Upload para Supabase Storage
+ * - Definir foto de capa + reordenar/remover
  * - Validação Zod
  */
-export function AdminForm({ onSuccess }: AdminFormProps) {
+export function AdminForm({ onSuccess, vehicle, onCancelEdit }: AdminFormProps) {
+  const isEdit = !!vehicle;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
@@ -47,6 +56,25 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       video_url: '',
     },
   });
+
+  // Ao entrar (ou trocar) o veículo em edição, preenche o form com os dados dele.
+  useEffect(() => {
+    if (vehicle) {
+      reset({
+        titulo: vehicle.titulo,
+        preco: vehicle.preco,
+        categoria: vehicle.categoria,
+        descricao: vehicle.descricao || '',
+        fotos: vehicle.fotos || [],
+        status: vehicle.status,
+        video_url: vehicle.video_url || '',
+      });
+      setUploadedPhotos(vehicle.fotos || []);
+      setVideoDone(false);
+      setCompressionError('');
+      setVideoError('');
+    }
+  }, [vehicle, reset]);
 
   const precoValue = watch('preco');
 
@@ -116,6 +144,17 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
     setUploadedPhotos(uploadedPhotos.filter((_, i) => i !== index));
   };
 
+  // Move a foto para o início = vira a CAPA (primeira foto é a que aparece no card)
+  const makeCover = (index: number) => {
+    if (index === 0) return;
+    setUploadedPhotos((prev) => {
+      const next = [...prev];
+      const [pic] = next.splice(index, 1);
+      next.unshift(pic);
+      return next;
+    });
+  };
+
   // Upload do vídeo DIRETO pro Supabase Storage (não passa pela Vercel = sem limite 4.5MB)
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0];
@@ -167,8 +206,10 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/admin/vehicles', {
-        method: 'POST',
+      const url = isEdit ? `/api/admin/vehicles/${vehicle!.id}` : '/api/admin/vehicles';
+      const method = isEdit ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, fotos: uploadedPhotos }),
       });
@@ -177,14 +218,15 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
         const msg =
           typeof json.error === 'string'
             ? json.error
-            : 'Não foi possível cadastrar';
+            : isEdit ? 'Não foi possível salvar' : 'Não foi possível cadastrar';
         throw new Error(msg);
       }
 
-      alert('✅ Veículo cadastrado com sucesso!');
+      alert(isEdit ? '✅ Alterações salvas!' : '✅ Veículo cadastrado com sucesso!');
       reset();
       setUploadedPhotos([]);
       onSuccess?.();
+      if (isEdit) onCancelEdit?.();
     } catch (err) {
       alert(`❌ Erro: ${err instanceof Error ? err.message : 'Desconhecido'}`);
     } finally {
@@ -194,6 +236,23 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Banner do modo edição */}
+      {isEdit && (
+        <div className="flex items-center justify-between bg-secondary/10 border border-secondary/20 rounded-lg px-4 py-2">
+          <span className="text-sm font-semibold text-secondary">
+            ✏️ Editando: {vehicle!.titulo}
+          </span>
+          <button
+            type="button"
+            onClick={() => { reset(); setUploadedPhotos([]); onCancelEdit?.(); }}
+            className="flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-900"
+            disabled={isSubmitting}
+          >
+            <ArrowLeft className="w-4 h-4" /> Cancelar
+          </button>
+        </div>
+      )}
+
       {/* Título */}
       <div>
         <label className="block text-sm font-semibold text-neutral-700 mb-2">
@@ -214,7 +273,7 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       {/* Preço */}
       <div>
         <label className="block text-sm font-semibold text-neutral-700 mb-2">
-          Preço (R$) *
+          Preço (R$) * <span className="font-normal text-neutral-400">— 0 = "Sob consulta"</span>
         </label>
         <div className="flex items-center gap-2">
           <input
@@ -250,6 +309,23 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
           <option value="ambos">🚗🔑 Venda e Aluguel</option>
         </select>
       </div>
+
+      {/* Status (só faz sentido na edição) */}
+      {isEdit && (
+        <div>
+          <label className="block text-sm font-semibold text-neutral-700 mb-2">
+            Situação
+          </label>
+          <select
+            {...register('status')}
+            className="w-full px-4 py-2 border border-neutral-300 rounded-lg input-focus"
+            disabled={isSubmitting}
+          >
+            <option value="disponivel">🟢 Disponível</option>
+            <option value="vendido">🔴 Vendido</option>
+          </select>
+        </div>
+      )}
 
       {/* Descrição */}
       <div>
@@ -343,6 +419,9 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
       <div>
         <label className="block text-sm font-semibold text-neutral-700 mb-2">
           Fotos ({uploadedPhotos.length}/10)
+          {uploadedPhotos.length > 1 && (
+            <span className="font-normal text-neutral-400"> — a 1ª é a capa; toque ★ para trocar</span>
+          )}
         </label>
         <div className="border-2 border-dashed border-neutral-300 rounded-lg p-4 text-center cursor-pointer hover:bg-neutral-50">
           <input
@@ -380,17 +459,35 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
           <div className="grid grid-cols-3 gap-2 mt-4">
             {uploadedPhotos.map((photo, idx) => (
               <div
-                key={idx}
-                className="relative bg-neutral-100 rounded-lg overflow-hidden"
+                key={photo}
+                className={`relative bg-neutral-100 rounded-lg overflow-hidden ${
+                  idx === 0 ? 'ring-2 ring-primary' : ''
+                }`}
               >
                 <img
                   src={photo}
                   alt={`Foto ${idx + 1}`}
                   className="w-full h-20 object-cover"
                 />
+                {idx === 0 && (
+                  <span className="absolute bottom-0 left-0 right-0 bg-primary/90 text-white text-[10px] text-center py-0.5 font-semibold">
+                    CAPA
+                  </span>
+                )}
+                {idx !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => makeCover(idx)}
+                    title="Tornar capa"
+                    className="absolute top-1 left-1 bg-white/90 text-primary p-1 rounded shadow"
+                  >
+                    <Star className="w-3 h-3" />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => removePhoto(idx)}
+                  title="Remover"
                   className="absolute top-1 right-1 bg-danger text-white p-1 rounded"
                 >
                   <X className="w-3 h-3" />
@@ -408,7 +505,11 @@ export function AdminForm({ onSuccess }: AdminFormProps) {
         className="btn-primary w-full flex items-center justify-center gap-2"
       >
         {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-        {isSubmitting ? 'Salvando...' : '➕ Cadastrar Veículo'}
+        {isSubmitting
+          ? 'Salvando...'
+          : isEdit
+          ? '💾 Salvar alterações'
+          : '➕ Cadastrar Veículo'}
       </button>
     </form>
   );

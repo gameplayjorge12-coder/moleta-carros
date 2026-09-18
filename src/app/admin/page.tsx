@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false);
+  const [editing, setEditing] = useState<Vehicle | null>(null);
 
   // Fonte da verdade = sessão no servidor (cookie httpOnly), não localStorage.
   // Evita o painel abrir com sessão expirada e todas as ações darem 401.
@@ -152,9 +153,15 @@ export default function AdminPage() {
         <div className="grid md:grid-cols-2 gap-8">
           {/* Formulário */}
           <div>
-            <h2 className="text-2xl font-bold text-secondary mb-4">Cadastrar Veículo</h2>
+            <h2 className="text-2xl font-bold text-secondary mb-4">
+              {editing ? 'Editar Veículo' : 'Cadastrar Veículo'}
+            </h2>
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <AdminForm onSuccess={loadVehicles} />
+              <AdminForm
+                onSuccess={loadVehicles}
+                vehicle={editing}
+                onCancelEdit={() => setEditing(null)}
+              />
             </div>
           </div>
 
@@ -180,7 +187,14 @@ export default function AdminPage() {
                   Carregando veículos...
                 </div>
               ) : (
-                <AdminList vehicles={vehicles} onUpdate={loadVehicles} />
+                <AdminList
+                  vehicles={vehicles}
+                  onUpdate={loadVehicles}
+                  onEdit={(v) => {
+                    setEditing(v);
+                    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
               )}
             </div>
           </div>

@@ -54,3 +54,4 @@ Thumbs.db
 # Artefatos de teste (Playwright)
 /test-results
 /playwright-report
+tsconfig.tsbuildinfo

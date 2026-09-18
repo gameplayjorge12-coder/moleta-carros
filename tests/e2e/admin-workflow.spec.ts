@@ -1,12 +1,18 @@
 import { test, expect } from '@playwright/test';
 
+// ⚠️ Caminho INEXISTENTE de propósito: o DELETE limpa o Storage dos objetos do
+// veículo. Usar uma foto REAL aqui apagaria a imagem do carro real em produção.
 const IMG =
-  'https://npxqnedaaeuzitdiqgvd.supabase.co/storage/v1/object/public/veiculos/rav4-1.jpg';
+  'https://npxqnedaaeuzitdiqgvd.supabase.co/storage/v1/object/public/veiculos/zz_qa_inexistente_workflow.jpg';
+
+// Senha do ambiente — nunca hardcoded (quebra quando a senha real muda).
+const ADMIN_PASS =
+  process.env.E2E_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'admin123';
 
 // Simula o dia-a-dia do Marcelo pela mesma API que o painel usa.
 test('workflow admin: criar → vender → vídeo → deletar', async ({ request }) => {
   const login = await request.post('/api/admin/login', {
-    data: { password: 'moleta@2026' },
+    data: { password: ADMIN_PASS },
   });
   expect(login.ok()).toBeTruthy();
 
@@ -44,7 +50,7 @@ test('workflow admin: criar → vender → vídeo → deletar', async ({ request
 });
 
 test('workflow admin: cadastro inválido é rejeitado (título curto)', async ({ request }) => {
-  await request.post('/api/admin/login', { data: { password: 'moleta@2026' } });
+  await request.post('/api/admin/login', { data: { password: ADMIN_PASS } });
   const bad = await request.post('/api/admin/vehicles', {
     data: { titulo: 'AB', preco: 0, categoria: 'venda', fotos: [IMG], status: 'disponivel' },
   });

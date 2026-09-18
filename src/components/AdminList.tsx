@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Trash2, CheckCircle2, Clock } from 'lucide-react';
+import { Trash2, CheckCircle2, Clock, Pencil } from 'lucide-react';
 import { priceLabel, formatDate } from '@/lib/formatters';
 import { useState } from 'react';
 import type { Database } from '@/types/database';
@@ -11,6 +11,7 @@ type Vehicle = Database['public']['Tables']['veiculos']['Row'];
 interface AdminListProps {
   vehicles: Vehicle[];
   onUpdate?: () => void;
+  onEdit?: (vehicle: Vehicle) => void;
 }
 
 /**
@@ -18,7 +19,7 @@ interface AdminListProps {
  * - Marcar como vendido
  * - Deletar
  */
-export function AdminList({ vehicles, onUpdate }: AdminListProps) {
+export function AdminList({ vehicles, onUpdate, onEdit }: AdminListProps) {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
   const handleMarkSold = async (vehicleId: string) => {
@@ -123,6 +124,17 @@ export function AdminList({ vehicles, onUpdate }: AdminListProps) {
 
           {/* Ações */}
           <div className="flex gap-2 flex-shrink-0">
+            {onEdit && (
+              <button
+                onClick={() => onEdit(vehicle)}
+                disabled={isUpdating === vehicle.id}
+                className="text-xs px-2 py-1 bg-secondary text-white rounded hover:bg-secondary/90 disabled:opacity-50 flex items-center gap-1"
+              >
+                <Pencil className="w-3 h-3" />
+                Editar
+              </button>
+            )}
+
             {vehicle.status !== 'vendido' && (
               <button
                 onClick={() => handleMarkSold(vehicle.id)}

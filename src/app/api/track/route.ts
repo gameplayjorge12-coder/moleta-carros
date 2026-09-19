@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { validateSignal } from '@/lib/mesh/signal';
-import { supabaseSecret } from '@/lib/adminDb';
+import { pgClient } from '@/lib/adminDb';
 
 // Ingestão de sinais do MALHA. Server-only: usa a chave secreta (bypassa RLS).
 // O browser nunca escreve no banco — só fala com esta rota. [append-only em mesh_sinal]
@@ -40,45 +39,45 @@ export async function POST(req: NextRequest) {
   }
   const s = parsed.data;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secret = supabaseSecret();
-  if (!url || !secret) {
-    // sem credencial server → não derruba a UI; só não grava
-    return new NextResponse(null, { status: 204 });
-  }
-
-  const supabase = createClient(url, secret, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-
   const ip = clientIp(req);
   const geo = geoFrom(req);
   const ua = req.headers.get('user-agent');
 
+  // Grava via POSTGRES_URL (mesmo caminho do admin, já comprovado em prod).
+  // Superusuário → ignora RLS. INSERT é permitido pelo trigger append-only.
+  const c = pgClient();
   try {
-    await supabase.from('mesh_sinal').insert({
-      device_fp: s.device_fp ?? null,
-      site: s.site,
-      tipo: s.tipo,
-      veiculo_id: s.veiculo_id ?? null,
-      ip,
-      geo,
-      referrer: s.referrer ?? null,
-      utm: s.utm ?? null,
-      payload: s.payload ?? {},
-    });
-
-    // atualiza/insere o dispositivo (primeiro_visto fica no default no insert novo)
+    await c.connect();
+    await c.query(
+      `insert into mesh_sinal (device_fp, site, tipo, veiculo_id, ip, geo, referrer, utm, payload)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [
+        s.device_fp ?? null,
+        s.site,
+        s.tipo,
+        s.veiculo_id ?? null,
+        ip,
+        geo ? JSON.stringify(geo) : null,
+        s.referrer ?? null,
+        s.utm ? JSON.stringify(s.utm) : null,
+        JSON.stringify(s.payload ?? {}),
+      ]
+    );
     if (s.device_fp) {
-      await supabase
-        .from('mesh_device')
-        .upsert(
-          { device_fp: s.device_fp, ultimo_visto: new Date().toISOString(), ua },
-          { onConflict: 'device_fp' }
-        );
+      await c.query(
+        `insert into mesh_device (device_fp, ua) values ($1,$2)
+         on conflict (device_fp) do update set ultimo_visto = now(), ua = excluded.ua`,
+        [s.device_fp, ua]
+      );
     }
   } catch {
-    return new NextResponse(null, { status: 204 });
+    // rastreio nunca derruba a UI; se o banco falhar, só não grava
+  } finally {
+    try {
+      await c.end();
+    } catch {
+      /* noop */
+    }
   }
 
   return new NextResponse(null, { status: 204 });

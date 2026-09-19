@@ -11,13 +11,17 @@ const inter = Inter({
 });
 
 // Domínio via env (troca fácil quando o Marcelo tiver domínio próprio, sem quebrar OG/canonical)
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://moleta-carros.vercel.app';
+// Default = domínio próprio já no ar. Ainda dá pra sobrescrever via env.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://moletaveiculos.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Moleta Carros | Venda e Aluguel de Veículos em Uraí',
   description: 'Encontre o seu próximo carro com a Moleta Carros. Venda e aluguel de veículos de qualidade em Uraí, PR.',
   keywords: ['carros', 'venda', 'aluguel', 'locadora', 'Uraí', 'PR', 'veículos'],
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
     title: 'Moleta Carros',
     description: 'Venda e aluguel de veículos de qualidade em Uraí, PR',

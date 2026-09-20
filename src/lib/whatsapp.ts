@@ -30,13 +30,14 @@ export function getWhatsAppLink(
         ? 'Locadora'
         : 'Venda e Aluguel';
 
-  let message = `Olá Marcelo! Vi o veículo "${carTitle}" (${categoryLabel}) no site da Moleta Carros.`;
+  let message = `Olá Marcelo! Tenho interesse no ${carTitle} (${categoryLabel}) que vi no site da Moleta Carros.`;
 
   if (price) {
-    message += ` Preço: R$ ${price.toLocaleString('pt-BR')}.`;
+    message += ` Vi por R$ ${price.toLocaleString('pt-BR')}.`;
   }
 
-  message += ` Poderia me passar mais informações sobre esse carro?`;
+  // As perguntas que o comprador brasileiro de fato faz (encurta o caminho até a venda).
+  message += ` Ainda está disponível? Queria saber sobre financiamento, se aceita troca, e a quilometragem.`;
 
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${MARCELO_PHONE}?text=${encodedMessage}`;
@@ -46,7 +47,7 @@ export function getWhatsAppLink(
  * Link simplificado (sem preço) para uso em CTAs gerais
  */
 export function getWhatsAppSimpleLink(): string {
-  const message = `Olá Marcelo! Vi o site da Moleta Carros e gostaria de conhecer os seus veículos. Qual o melhor horário para conversar?`;
+  const message = `Olá Marcelo! Vi o site da Moleta Carros e queria saber mais sobre os veículos — valores, financiamento e se aceita troca. Qual o melhor horário para conversar?`;
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${MARCELO_PHONE}?text=${encodedMessage}`;
 }

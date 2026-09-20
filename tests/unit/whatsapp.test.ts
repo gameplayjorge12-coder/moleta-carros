@@ -31,3 +31,20 @@ describe('WhatsApp — número e links', () => {
     expect(getWhatsAppSimpleLink()).not.toContain('5585987654321');
   });
 });
+
+describe('WhatsApp — a conversa que o brasileiro realmente tem (C)', () => {
+  const texto = (url: string) => decodeURIComponent(url.split('text=')[1] ?? '');
+
+  it('mensagem do carro traz as perguntas humanas: financiamento, troca, disponível', () => {
+    const t = texto(getWhatsAppLink('Toyota Corolla 2019', 'venda', 80000)).toLowerCase();
+    expect(t).toContain('financiamento');
+    expect(t).toContain('troca');
+    expect(t).toContain('disponível');
+  });
+
+  it('link geral também abre espaço pra financiamento/troca', () => {
+    const t = texto(getWhatsAppSimpleLink()).toLowerCase();
+    expect(t).toContain('financiamento');
+    expect(t).toContain('troca');
+  });
+});

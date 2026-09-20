@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { LogOut, RefreshCw } from 'lucide-react';
 import { AdminForm } from '@/components/AdminForm';
 import { AdminList } from '@/components/AdminList';
+import { Cockpit } from '@/components/Cockpit';
 import { createBrowserSupabaseClient } from '@/lib/supabase';
 import type { Database } from '@/types/database';
 
@@ -150,6 +151,11 @@ export default function AdminPage() {
 
       {/* Conteúdo */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Copiloto — inteligência do dia (topo do painel) */}
+        <div className="mb-8">
+          <Cockpit />
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8">
           {/* Formulário */}
           <div>

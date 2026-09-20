@@ -1,6 +1,16 @@
 import Image from 'next/image';
+import { MapPin, Eye, UserCheck, Camera } from 'lucide-react';
 import { getWhatsAppSimpleLink } from '@/lib/whatsapp';
 import { Reveal } from '@/components/Reveal';
+
+// Anti-golpe (B): prova de legitimidade que reduz o medo de comprar usado online.
+// Tudo verdadeiro e verificável. (CNPJ entra aqui quando o Marcelo enviar.)
+const GARANTIAS = [
+  { icon: MapPin, t: 'Loja física em Uraí, PR', s: 'Endereço real — venha ver no mapa' },
+  { icon: Eye, t: 'Veja o carro pessoalmente', s: 'Confira antes de fechar negócio' },
+  { icon: UserCheck, t: 'Direto com o Marcelo', s: 'Sem intermediário, sem robô' },
+  { icon: Camera, t: 'Fotos reais dos veículos', s: 'Nada de foto de catálogo' },
+];
 
 const PATIO =
   'https://npxqnedaaeuzitdiqgvd.supabase.co/storage/v1/object/public/veiculos/patio.jpg';
@@ -37,6 +47,19 @@ export function SobreSection() {
               WhatsApp — ele tira todas as suas dúvidas sobre valores, quilometragem
               e condições.
             </p>
+            {/* Garantias anti-golpe */}
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              {GARANTIAS.map((g, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <g.icon className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-neutral-800 leading-tight">{g.t}</p>
+                    <p className="text-xs text-neutral-500 mt-0.5">{g.s}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <a
               href={getWhatsAppSimpleLink()}
               target="_blank"

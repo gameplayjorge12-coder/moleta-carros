@@ -1,6 +1,8 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { CarCard } from './CarCard';
+import { getWhatsAppSimpleLink } from '@/lib/whatsapp';
 import type { Database } from '@/types/database';
 
 type Vehicle = Database['public']['Tables']['veiculos']['Row'];
@@ -30,11 +32,23 @@ export function CarGrid({ vehicles, loading = false }: CarGridProps) {
     );
   }
 
+  // Beco sem saída vira ação: humano não gosta de tela morta (padrão H).
   if (vehicles.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 sm:py-20">
-        <p className="text-neutral-600 text-lg">Nenhum veículo encontrado</p>
-        <p className="text-neutral-500 text-sm mt-2">Volte em breve! Temos carros novos frequentemente</p>
+      <div className="flex flex-col items-center justify-center text-center py-12 sm:py-20 bg-neutral-50 rounded-2xl border border-neutral-200">
+        <p className="text-neutral-800 text-lg font-semibold">Não achou o carro aqui?</p>
+        <p className="text-neutral-600 text-sm mt-2 max-w-md">
+          O estoque gira rápido e o Marcelo consegue buscar o modelo certo pra você.
+          Chama no WhatsApp que ele te ajuda.
+        </p>
+        <a
+          href={getWhatsAppSimpleLink()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary inline-flex items-center gap-2 mt-5"
+        >
+          <MessageCircle className="w-5 h-5" /> Falar com o Marcelo
+        </a>
       </div>
     );
   }

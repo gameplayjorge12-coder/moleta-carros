@@ -46,7 +46,7 @@ describe('computeInsights — robustez', () => {
     expect(r.carros[0].preco).toBe(0);
     expect(r.carros[0].titulo).toBe('Veículo');
     // fotos null => sem foto => alerta vermelho
-    expect(r.alertas.some((a) => a.nivel === 'vermelho' && /sem foto/i.test(a.titulo))).toBe(true);
+    expect(r.alertas.some((a) => a.nivel === 'vermelho' && /foto/i.test(a.titulo))).toBe(true);
   });
 
   it('11. sinais de teste (TESTFP_) são ignorados', () => {
@@ -93,23 +93,36 @@ describe('computeInsights — semáforo', () => {
       sinal('car_detail_view', { veiculo_id: 'c2', device_fp: 'e', criado_em: diasAtras(4) }),
     ];
     const r = computeInsights(sigs, [v], NOW);
-    const al = r.alertas.find((a) => a.nivel === 'amarelo' && /interesse parado/i.test(a.titulo));
+    const al = r.alertas.find((a) => a.nivel === 'amarelo' && /empurrão final/i.test(a.titulo));
     expect(al).toBeTruthy();
     expect(al!.valor).toBe(90000);
   });
 
-  it('6. invisível (7+ dias, 0 views) => vermelho', () => {
+  it('6. sem tráfego na semana (cold-start) => semDados e NÃO aponta o dedo', () => {
     const v = carro({ id: 'c3', created_at: diasAtras(10) });
     const r = computeInsights([], [v], NOW);
-    expect(r.alertas.some((a) => a.nivel === 'vermelho' && /invisível/i.test(a.titulo))).toBe(true);
+    expect(r.semDados).toBe(true);
+    // cold-start não grita fracasso: nada de "invisível/pedindo vitrine"
+    expect(r.alertas.some((a) => /invis|vitrine/i.test(a.titulo))).toBe(false);
   });
 
-  it('7. sem foto tem precedência sobre invisível', () => {
+  it('6b. carro parado MAS com movimento no site => amarelo "pedindo vitrine"', () => {
+    const alvo = carro({ id: 'c3', created_at: diasAtras(10) });
+    const outro = carro({ id: 'c3b', created_at: diasAtras(1) });
+    // 1 view hoje em OUTRO carro => site teve movimento => semDados=false
+    const sigs = [sinal('car_detail_view', { veiculo_id: 'c3b', device_fp: 'v1', criado_em: HOJE_UTC('10:00') })];
+    const r = computeInsights(sigs, [alvo, outro], NOW);
+    expect(r.semDados).toBe(false);
+    const al = r.alertas.find((a) => a.veiculo_id === 'c3' && a.nivel === 'amarelo' && /vitrine/i.test(a.titulo));
+    expect(al).toBeTruthy();
+  });
+
+  it('7. sem foto tem precedência (único vermelho do carro)', () => {
     const v = carro({ id: 'c4', created_at: diasAtras(10), fotos: [] });
     const r = computeInsights([], [v], NOW);
     const verm = r.alertas.filter((a) => a.veiculo_id === 'c4' && a.nivel === 'vermelho');
     expect(verm).toHaveLength(1);
-    expect(verm[0].titulo).toMatch(/sem foto/i);
+    expect(verm[0].titulo).toMatch(/foto/i);
   });
 
   it('8. lead quente (24h) => verde + entra em leadsQuentes + conta contato', () => {
@@ -202,13 +215,19 @@ describe('computeInsights — cotidiano humano', () => {
     expect(r.leadsQuentes[0].foraDoExpediente).toBe(true);
   });
 
-  it('16. silêncio só alarma depois do horário de movimento (não de manhã cedo)', () => {
+  it('16. silêncio de hoje só alarma com movimento na semana e após o meio-dia', () => {
+    // houve movimento ANTES na semana (semDados=false), mas nada hoje
+    const semana = [sinal('page_view', { device_fp: 'ontem', criado_em: diasAtras(2) })];
     const MANHA = new Date('2026-09-20T12:00:00.000Z'); // 09:00 BR
-    const rManha = computeInsights([], [], MANHA);
-    expect(rManha.alertas.some((a) => /sem visitas/i.test(a.titulo))).toBe(false);
-    // à tarde (12:00 BR) com 0 visita, aí sim alarma
-    const rTarde = computeInsights([], [], NOW);
-    expect(rTarde.alertas.some((a) => /sem visitas/i.test(a.titulo))).toBe(true);
+    const rManha = computeInsights(semana, [], MANHA);
+    expect(rManha.alertas.some((a) => /movimento de hoje/i.test(a.titulo))).toBe(false);
+    // à tarde (12:00 BR) com 0 visita hoje, aí sim alarma
+    const rTarde = computeInsights(semana, [], NOW);
+    expect(rTarde.alertas.some((a) => /movimento de hoje/i.test(a.titulo))).toBe(true);
+    // e no cold-start (semana vazia) NÃO alarma silêncio (evita nag desmotivante)
+    const rColdStart = computeInsights([], [], NOW);
+    expect(rColdStart.semDados).toBe(true);
+    expect(rColdStart.alertas.some((a) => /movimento de hoje/i.test(a.titulo))).toBe(false);
   });
 
   it('17. carro velho + com movimento => nudge "ainda disponível?" (drift offline)', () => {
@@ -219,7 +238,7 @@ describe('computeInsights — cotidiano humano', () => {
       sinal('car_detail_view', { veiculo_id: 'd1', device_fp: 'p3', criado_em: diasAtras(3) }),
     ];
     const r = computeInsights(sigs, [v], NOW);
-    const al = r.alertas.find((a) => a.nivel === 'amarelo' && /disponível/i.test(a.titulo));
+    const al = r.alertas.find((a) => a.veiculo_id === 'd1' && a.nivel === 'amarelo' && /disponível/i.test(a.detalhe));
     expect(al).toBeTruthy();
     // não pode ser marcado invisível (tem views) nem gerar 2 amarelos no mesmo carro
     expect(r.alertas.filter((a) => a.veiculo_id === 'd1' && a.nivel === 'vermelho')).toHaveLength(0);

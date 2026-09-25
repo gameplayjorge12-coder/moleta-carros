@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import {
   Trophy, AlertTriangle, Target, Flame, Users, Eye, MessageCircle,
-  Wallet, RefreshCw, Moon, Repeat, ChevronRight,
+  Wallet, RefreshCw, Moon, Repeat, ChevronRight, ChevronDown, Sparkles, Camera,
 } from 'lucide-react';
-import type { Insights, Nivel } from '@/lib/insights';
+import type { Insights, Nivel, Alerta } from '@/lib/insights';
 import { formatCurrency } from '@/lib/formatters';
 
 // Copiloto Moleta — o cockpit que o Marcelo abre. Lê /api/admin/insights e
@@ -47,6 +47,55 @@ function Kpi({ icon: Icon, label, value }: { icon: any; label: string; value: st
       <Icon className="w-4 h-4 text-white/60 mb-1" />
       <div className="text-2xl font-bold leading-none">{value}</div>
       <div className="text-[11px] text-white/60 mt-1">{label}</div>
+    </div>
+  );
+}
+
+// Agrupa alertas do MESMO tipo (mesmo título) num só card colapsável — evita o
+// mural de spans repetidos. 1 item = card simples; 2+ = header com contador que
+// abre a lista ao clicar.
+function GrupoAlerta({ titulo, itens }: { titulo: string; itens: Alerta[] }) {
+  const [aberto, setAberto] = useState(false);
+  const nivel = itens[0].nivel;
+
+  if (itens.length === 1) {
+    const a = itens[0];
+    return (
+      <div className={`rounded-lg border-l-4 ${borda[nivel]} px-4 py-3`}>
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${dot[nivel]}`} />
+          <span className="font-semibold text-sm text-neutral-800">{a.titulo}</span>
+          {a.valor ? (
+            <span className="ml-auto text-xs font-bold text-neutral-500">{formatCurrency(a.valor)}</span>
+          ) : null}
+        </div>
+        <p className="text-sm text-neutral-600 mt-1 pl-4">{a.detalhe}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`rounded-lg border-l-4 ${borda[nivel]} px-4 py-3`}>
+      <button
+        onClick={() => setAberto((v) => !v)}
+        className="w-full flex items-center gap-2 text-left"
+      >
+        <span className={`w-2 h-2 rounded-full ${dot[nivel]}`} />
+        <span className="font-semibold text-sm text-neutral-800">{titulo}</span>
+        <span className="text-xs font-bold text-neutral-500 bg-white/70 rounded-full px-2 py-0.5">
+          {itens.length} carros
+        </span>
+        {aberto
+          ? <ChevronDown className="w-4 h-4 text-neutral-400 ml-auto" />
+          : <ChevronRight className="w-4 h-4 text-neutral-400 ml-auto" />}
+      </button>
+      {aberto && (
+        <ul className="mt-2 pl-4 space-y-1">
+          {itens.map((a, i) => (
+            <li key={i} className="text-sm text-neutral-600">{a.detalhe}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -96,8 +145,16 @@ export function Cockpit() {
     );
   }
 
-  const { hoje, briefing, alertas, carros, leadsQuentes, provaDeValor, foraDoExpedienteAgora } = data;
+  const { hoje, briefing, alertas, carros, leadsQuentes, provaDeValor, foraDoExpedienteAgora, semDados } = data;
   const carrosComMovimento = carros.filter((c) => c.views7d > 0 || c.contatos7d > 0);
+
+  // Agrupa alertas por título, preservando a ordem já priorizada pelo backend.
+  const gruposAlerta: { titulo: string; itens: Alerta[] }[] = [];
+  for (const a of alertas) {
+    const g = gruposAlerta.find((x) => x.titulo === a.titulo);
+    if (g) g.itens.push(a);
+    else gruposAlerta.push({ titulo: a.titulo, itens: [a] });
+  }
 
   return (
     <div className="space-y-6">
@@ -177,28 +234,48 @@ export function Cockpit() {
         </div>
       )}
 
-      {/* ALERTAS — semáforo */}
-      {alertas.length > 0 && (
+      {/* MALHA AQUECENDO — cold-start: em vez de parede de vermelho, um convite */}
+      {semDados && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 text-primary font-bold text-sm mb-1">
+            <Sparkles className="w-4 h-4" /> A malha está aquecendo
+          </div>
+          <p className="text-sm text-neutral-700">
+            Sua vitrine está no ar e já mede cada acesso. Ainda não teve movimento
+            essa semana — poste um carro no seu story ou grupo de WhatsApp e volte
+            aqui: em minutos aparece quem olhou e por quanto tempo.
+          </p>
+        </div>
+      )}
+
+      {/* ALERTAS — semáforo, agrupados e colapsáveis */}
+      {gruposAlerta.length > 0 && (
         <div>
           <h3 className="font-bold text-secondary mb-2">O que o copiloto notou</h3>
           <div className="space-y-2">
-            {alertas.map((a, i) => (
-              <div key={i} className={`rounded-lg border-l-4 ${borda[a.nivel]} px-4 py-3`}>
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${dot[a.nivel]}`} />
-                  <span className="font-semibold text-sm text-neutral-800">{a.titulo}</span>
-                  {a.valor ? (
-                    <span className="ml-auto text-xs font-bold text-neutral-500">{formatCurrency(a.valor)}</span>
-                  ) : null}
-                </div>
-                <p className="text-sm text-neutral-600 mt-1 pl-4">{a.detalhe}</p>
-              </div>
+            {gruposAlerta.map((g, i) => (
+              <GrupoAlerta key={i} titulo={g.titulo} itens={g.itens} />
             ))}
           </div>
         </div>
       )}
 
-      {/* TERMÔMETRO DE DESEJO */}
+      {/* TERMÔMETRO DE DESEJO — placeholder educativo enquanto não há movimento */}
+      {carrosComMovimento.length === 0 && (
+        <div>
+          <h3 className="font-bold text-secondary mb-2">Termômetro de desejo (7 dias)</h3>
+          <div className="rounded-xl border border-dashed border-neutral-300 bg-white p-5 text-center">
+            <Camera className="w-6 h-6 text-neutral-300 mx-auto mb-2" />
+            <p className="text-sm text-neutral-600">
+              Este é o painel que mostra <strong>quais carros mais prendem atenção</strong>:
+              quanto tempo as pessoas param pra olhar cada um e quem volta pra ver de novo.
+            </p>
+            <p className="text-xs text-neutral-400 mt-1">
+              Ele se preenche sozinho conforme as pessoas visitam a vitrine.
+            </p>
+          </div>
+        </div>
+      )}
       {carrosComMovimento.length > 0 && (
         <div>
           <h3 className="font-bold text-secondary mb-2">Termômetro de desejo (7 dias)</h3>

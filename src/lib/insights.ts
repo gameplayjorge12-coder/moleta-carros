@@ -69,6 +69,9 @@ export type Lead = {
 export type Insights = {
   geradoEmISO: string;
   foraDoExpedienteAgora: boolean;
+  /** true quando a malha ainda não colheu tráfego na semana (cold-start).
+   *  Serve pro copiloto NÃO gritar "fracasso" quando na verdade só falta dado. */
+  semDados: boolean;
   hoje: {
     visitantes: number;
     pageviews: number;
@@ -233,6 +236,11 @@ export function computeInsights(
     .sort((x, y) => y.score - x.score || y.views7d - x.views7d);
 
   // ---- Alertas (semáforo) ---------------------------------------------------
+  // Cold-start: sem NENHUM visitante na semana = a malha ainda está aquecendo.
+  // Nesse caso não faz sentido gritar "carro invisível / ninguém viu" pra cada
+  // carro (isso é falta de dado, não fracasso). Só alertas realmente acionáveis
+  // (ex: carro sem foto) e um único card educativo entram.
+  const semDados = visitantesSemana.size === 0;
   const alertas: Alerta[] = [];
   for (const v of vehicles) {
     const a = agg.get(v.id) ?? zero;
@@ -275,21 +283,22 @@ export function computeInsights(
       });
     }
     if (!disponivel) continue;
-    // 🔴 sem foto
+    // 🔴 sem foto — o único ponto que trava o carro; enquadrado como "fácil de resolver"
     if (fotos.length === 0) {
       alertas.push({
         nivel: 'vermelho',
-        titulo: 'Carro sem foto',
-        detalhe: `O ${titulo} está sem nenhuma foto — ninguém compra o que não vê. Suba fotos.`,
+        titulo: 'Falta a foto pra esse entrar no páreo',
+        detalhe: `O ${titulo} está publicado, mas ainda sem foto — e é a foto que faz a pessoa parar e clicar. Assim que você subir as fotos dele, ele passa a disputar a atenção junto com os outros.`,
         veiculo_id: v.id,
       });
     }
-    // 🔴 invisível (7+ dias, 0 view)
-    else if (idadeDias >= 7 && a.views7d === 0) {
+    // 🟡 pouco visto — só quando JÁ existe movimento no site (senão é cold-start,
+    // não fracasso). Analisa a causa (distribuição, não o carro) e prescreve.
+    else if (!semDados && idadeDias >= 7 && a.views7d === 0) {
       alertas.push({
-        nivel: 'vermelho',
-        titulo: 'Carro invisível',
-        detalhe: `O ${titulo} está há ${idadeDias} dias no ar e ninguém viu essa semana. Reposte ou destaque.`,
+        nivel: 'amarelo',
+        titulo: 'Esse carro está pedindo vitrine',
+        detalhe: `O ${titulo} está no ar há ${idadeDias} dias e essa semana o movimento foi pra outros carros — não é sinal contra ele, é que ele não circulou. Um repost ou um story reativa. Se já foi vendido, marcar como vendido tira ele da disputa.`,
         veiculo_id: v.id,
       });
     }
@@ -297,28 +306,30 @@ export function computeInsights(
     else if (idadeDias >= 14 && a.views7d >= 3) {
       alertas.push({
         nivel: 'amarelo',
-        titulo: 'Ainda está disponível?',
-        detalhe: `O ${titulo} está há ${idadeDias} dias no ar e ainda recebe visitas. Se já vendeu, marque como vendido pra não perder tempo com quem chamar.`,
+        titulo: 'Esse continua chamando atenção',
+        detalhe: `O ${titulo} está no ar há ${idadeDias} dias e ainda recebe visitas — segue interessando gente. Só confirme que ainda está disponível; se já vendeu, marcar como vendido evita você perder tempo com quem chamar.`,
         veiculo_id: v.id,
       });
     }
-    // 🟡 interesse parado (olham e não chamam)
+    // 🟡 interesse parado (olham e não chamam) — é ATENÇÃO capturada, não fracasso.
+    // Interpreta a lacuna look→contato e prescreve, creditando o site pelo interesse.
     else if (a.views7d >= 4 && a.contatos7d === 0) {
       alertas.push({
         nivel: 'amarelo',
-        titulo: 'Interesse parado',
-        detalhe: `${a.views7d} pessoas olharam o ${titulo} essa semana e nenhuma chamou. Talvez preço ou as fotos.`,
+        titulo: 'Atenção real — falta o empurrão final',
+        detalhe: `O ${titulo} atraiu ${a.views7d} pessoas essa semana: o interesse existe. O que costuma travar entre olhar e chamar é uma última dúvida — o preço/condição não estar claro, ou faltar a foto do detalhe (interior, motor, painel) que decide. Reforçar isso no anúncio costuma virar o contato.`,
         veiculo_id: v.id,
         valor: preco,
       });
     }
   }
-  // 🟡 silêncio — só alarma depois do horário de movimento (não às 6h nem de madrugada)
-  if (pageviewsHoje === 0 && horaAgora >= MOVIMENTO_ESPERADO_APOS) {
+  // 🟡 silêncio — só alarma depois do horário de movimento (não às 6h nem de
+  // madrugada) E só quando a semana já teve movimento (senão é cold-start, não silêncio).
+  if (!semDados && pageviewsHoje === 0 && horaAgora >= MOVIMENTO_ESPERADO_APOS) {
     alertas.push({
       nivel: 'amarelo',
-      titulo: 'Sem visitas hoje ainda',
-      detalhe: 'Ninguém entrou no site hoje até agora. Um story ou post costuma trazer gente.',
+      titulo: 'O movimento de hoje ainda não começou',
+      detalhe: 'A vitrine está no ar e pronta, mas o fluxo de hoje ainda não veio — normal em dia sem post. O que costuma acender o movimento na hora é um story ou uma mensagem com um dos carros levando pro site.',
     });
   }
 
@@ -339,8 +350,9 @@ export function computeInsights(
     'Compartilhe a vitrine no seu story hoje — tráfego novo é venda nova.';
 
   // ---- Prova de valor (língua do Marcelo) -----------------------------------
-  const provaDeValor =
-    contatosSemana > 0
+  const provaDeValor = semDados
+    ? 'A vitrine está no ar e a malha começou a medir os acessos. Assim que gente entrar, aparece aqui quem olhou cada carro e por quanto tempo.'
+    : contatosSemana > 0
       ? `Essa semana o site trouxe ${visitantesSemana.size} visitante(s) e ${contatosSemana} contato(s) direto no seu WhatsApp.`
       : `Essa semana ${visitantesSemana.size} pessoa(s) passaram pela sua vitrine${retornosSemana > 0 ? ` e ${retornosSemana} voltaram pra olhar de novo` : ''}. O site está trabalhando pra você.`;
 
@@ -359,6 +371,7 @@ export function computeInsights(
   return {
     geradoEmISO: new Date(now).toISOString(),
     foraDoExpedienteAgora: foraAgora,
+    semDados,
     hoje: {
       visitantes: visitantesHoje.size,
       pageviews: pageviewsHoje,

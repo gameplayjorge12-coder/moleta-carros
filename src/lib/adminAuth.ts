@@ -11,11 +11,10 @@ export const ADMIN_COOKIE = 'moleta_admin';
 const SALT = 'moleta-admin-v1';
 
 export function adminPassword(): string {
-  // Server-only (este módulo usa next/headers). Preferir ADMIN_PASSWORD (env server).
-  // NEXT_PUBLIC_ADMIN_PASSWORD é lido só por compat de deploy legado e está DEPRECADO —
-  // o prefixo NEXT_PUBLIC_ sugere exposição ao browser; nunca referenciar em componente
-  // client. Remover assim que confirmado que ADMIN_PASSWORD (server-only) está no Vercel.
-  const pw = process.env.ADMIN_PASSWORD || process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+  // Server-only (este módulo usa next/headers). Senha vem de ADMIN_PASSWORD (env server-only,
+  // confirmado setado no Vercel prod em 2026-09-29). NUNCA usar NEXT_PUBLIC_* p/ segredo —
+  // o prefixo expõe ao browser. A leitura de NEXT_PUBLIC_ADMIN_PASSWORD foi removida.
+  const pw = process.env.ADMIN_PASSWORD;
   if (pw) return pw;
   // Dev local: conveniência. Produção: FAIL-CLOSED — sem senha configurada o login fica
   // desabilitado (senha impossível de adivinhar) em vez de cair num default fraco (admin123).

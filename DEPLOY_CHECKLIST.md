@@ -14,7 +14,7 @@
 
 - [ ] **Variáveis de ambiente**
   - [ ] `.env.local` preenchido com Supabase keys
-  - [ ] `NEXT_PUBLIC_ADMIN_PASSWORD` setado
+  - [ ] `ADMIN_PASSWORD` setado (server-only; NÃO usar `NEXT_PUBLIC_ADMIN_PASSWORD` — deprecado)
   - [ ] Nenhuma chave sensível no git
 
 ---
@@ -94,7 +94,7 @@
   - [ ] Variáveis de ambiente addicionadas
     - [ ] `NEXT_PUBLIC_SUPABASE_URL`
     - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    - [ ] `NEXT_PUBLIC_ADMIN_PASSWORD`
+    - [ ] `ADMIN_PASSWORD` (server-only — Production scope)
 
 - [ ] **Deploy preview**
   - [ ] Deploy completou sem erros

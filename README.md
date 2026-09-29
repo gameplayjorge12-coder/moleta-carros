@@ -127,7 +127,9 @@ CREATE POLICY "Delete autenticado" ON storage.objects FOR DELETE USING (bucket_i
 
 ### Login
 - Acesse: `/admin`
-- Senha padrão: `admin123` (trocar em produção!)
+- Dev local: `admin123` (só quando `NODE_ENV !== production`).
+- Produção: definida por `ADMIN_PASSWORD` no Vercel. Sem essa env, o login fica
+  desabilitado (fail-closed) — não há mais default fraco em produção.
 
 ### Cadastrar Carro
 1. Preencha: Título, Preço, Tipo (Venda/Aluguel)
@@ -169,10 +171,12 @@ CREATE POLICY "Delete autenticado" ON storage.objects FOR DELETE USING (bucket_i
 - Senha simples (`admin123`) aceita para teste
 
 ### Em Produção
-1. **Mudar senha admin**:
+1. **Mudar senha admin** — usar env **server-only** (nunca `NEXT_PUBLIC_*`):
    ```bash
-   NEXT_PUBLIC_ADMIN_PASSWORD="sua-senha-forte"
+   ADMIN_PASSWORD="sua-senha-forte"   # no Vercel, escopo Production
    ```
+   > `NEXT_PUBLIC_ADMIN_PASSWORD` está DEPRECADO — o prefixo `NEXT_PUBLIC_` sinaliza
+   > exposição ao browser. Ainda é lido por compat de deploy legado; migre para `ADMIN_PASSWORD`.
 
 2. **Ativar Supabase Auth**:
    - Configurar OAuth (Google/GitHub) no Supabase

@@ -4,6 +4,7 @@ import { llmFromEnv } from '@/lib/ingest/llm';
 import { treatImage, createPlateRecognizerDetector, type PlateDetector } from '@/lib/ingest/treat';
 import { ingestCarFromWhatsApp } from '@/lib/ingest/pipeline';
 import type { VehicleDraft } from '@/lib/ingest/extract';
+import { alertarDono } from '@/lib/alertar-dono';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -108,7 +109,10 @@ export async function POST(req: Request) {
       reply: result.reply,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? 'falha na ingestão' }, { status: 500 });
+    const msg = e?.message ?? 'falha na ingestão';
+    // Carro do Marcelo que não entra = lead perdido em silêncio. Avisa o dono (malha).
+    await alertarDono('Moleta: ingestão de carro FALHOU', `Um carro enviado pelo WhatsApp não entrou no catálogo: ${msg}\n\nTexto: ${String(text).slice(0, 120)}`).catch(() => {});
+    return NextResponse.json({ error: msg }, { status: 500 });
   } finally {
     try { await client.end(); } catch {}
   }

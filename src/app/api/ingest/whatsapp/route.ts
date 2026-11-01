@@ -47,10 +47,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'config Supabase ausente' }, { status: 500 });
   }
 
+  // Fail-closed de privacidade: sem detector de placa, NÃO ingerimos — publicar um
+  // carro com a placa à mostra é vazamento. Melhor bloquear e avisar o dono do que
+  // publicar sem borrar. Com o token, segue normal.
   const prToken = process.env.PLATE_RECOGNIZER_TOKEN;
-  const detect: PlateDetector | undefined = prToken
-    ? createPlateRecognizerDetector(prToken)
-    : undefined;
+  if (!prToken) {
+    await alertarDono(
+      'Moleta: ingestão BLOQUEADA (privacidade)',
+      'Chegou carro pelo WhatsApp, mas PLATE_RECOGNIZER_TOKEN não está configurado — não publico foto sem borrar a placa. Configure o token pra ligar a ingestão.'
+    ).catch(() => {});
+    return NextResponse.json(
+      { error: 'ingestão desabilitada: detector de placa não configurado (privacidade)' },
+      { status: 503 }
+    );
+  }
+  const detect: PlateDetector = createPlateRecognizerDetector(prToken);
 
   // decodifica as fotos (base64 → Buffer)
   const images: Buffer[] = [];

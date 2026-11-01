@@ -31,14 +31,14 @@ describe('treatImage', () => {
     expect(Math.max(r.width, r.height)).toBeLessThanOrEqual(1920);
   });
 
-  it('detector que falha NÃO derruba a ingestão (degrada sem borrar)', async () => {
+  it('detector que falha LANÇA (fail-closed: não publica foto sem garantir o borrão)', async () => {
     const foto = await fotoSintetica(800, 600);
     const detector: PlateDetector = async () => {
       throw new Error('api caiu');
     };
-    const r = await treatImage(foto, detector);
-    expect(r.platesBlurred).toBe(0);
-    expect(r.buffer.length).toBeGreaterThan(0);
+    // antes degradava publicando sem borrar (vazamento de placa); agora propaga o
+    // erro → o pipeline descarta a foto em vez de subir placa à mostra.
+    await expect(treatImage(foto, detector)).rejects.toThrow('api caiu');
   });
 });
 

@@ -10,7 +10,8 @@
  *    produção usa Plate Recognizer (robusto p/ placa BR/Mercosul, ângulo, borrão).
  *  - Placa é PIXELIZADA (resize down→up nearest), não blur gaussiano: fica
  *    ilegível de verdade e barato.
- *  - Se não houver detector/token, o pipeline NÃO falha — só não borra (degrada).
+ *  - Fail-closed: sem token, a ROTA recusa a ingestão (não publica placa à mostra).
+ *    Com detector, se a detecção FALHAR, a foto é descartada (nunca sobe sem tratar).
  *
  * Tudo via `sharp` (já dep do projeto) → roda no runtime Node da Vercel.
  */
@@ -86,11 +87,9 @@ export async function treatImage(
 
   let boxes: BBox[] = [];
   if (detector) {
-    try {
-      boxes = await detector(oriented);
-    } catch {
-      boxes = []; // detecção é best-effort — nunca derruba a ingestão
-    }
+    // fail-closed: detector configurado que FALHA propaga o erro — não publicamos
+    // foto sem garantia de que a placa foi tratada (a rota/pipeline descarta a foto).
+    boxes = await detector(oriented);
   }
 
   const blurred = await blurRegions(oriented, boxes, padding);

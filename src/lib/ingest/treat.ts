@@ -117,7 +117,13 @@ export function createSelfHostedDetector(url: string, apiKey: string): PlateDete
   return async (jpeg: Buffer): Promise<BBox[]> => {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'x-api-key': apiKey, 'Content-Type': 'application/octet-stream' },
+      headers: {
+        'x-api-key': apiKey,
+        'Content-Type': 'application/octet-stream',
+        // Cloudflare (bot protection) barra chamador sem UA de navegador (erro 1010).
+        // Chamada servidor-a-servidor do NOSSO site p/ o NOSSO bot — UA de navegador libera.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36',
+      },
       body: new Uint8Array(jpeg),
       signal: AbortSignal.timeout(40000),
     });

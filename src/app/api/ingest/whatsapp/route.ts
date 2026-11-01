@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pgClient, supabaseSecret } from '@/lib/adminDb';
 import { llmFromEnv } from '@/lib/ingest/llm';
-import { treatImage, createPlateRecognizerDetector, type PlateDetector } from '@/lib/ingest/treat';
+import { treatImage, createPlateRecognizerDetector, createSelfHostedDetector, type PlateDetector } from '@/lib/ingest/treat';
 import { ingestCarFromWhatsApp } from '@/lib/ingest/pipeline';
 import type { VehicleDraft } from '@/lib/ingest/extract';
 import { alertarDono } from '@/lib/alertar-dono';
@@ -47,21 +47,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'config Supabase ausente' }, { status: 500 });
   }
 
-  // Fail-closed de privacidade: sem detector de placa, NÃO ingerimos — publicar um
-  // carro com a placa à mostra é vazamento. Melhor bloquear e avisar o dono do que
-  // publicar sem borrar. Com o token, segue normal.
+  // Fail-closed de privacidade: prioriza o detector NOSSO (self-hosted no VPS); cai pro
+  // Plate Recognizer só se configurado. Sem NENHUM detector -> RECUSA (não publica placa
+  // à mostra) e avisa o dono. Publicar carro com placa legível = vazamento.
+  const detectorUrl = process.env.PLATE_DETECTOR_URL;
+  const detectorKey = process.env.PLATE_DETECTOR_KEY;
   const prToken = process.env.PLATE_RECOGNIZER_TOKEN;
-  if (!prToken) {
+  let detect: PlateDetector | null = null;
+  if (detectorUrl && detectorKey) {
+    detect = createSelfHostedDetector(detectorUrl, detectorKey);
+  } else if (prToken) {
+    detect = createPlateRecognizerDetector(prToken);
+  }
+  if (!detect) {
     await alertarDono(
       'Moleta: ingestão BLOQUEADA (privacidade)',
-      'Chegou carro pelo WhatsApp, mas PLATE_RECOGNIZER_TOKEN não está configurado — não publico foto sem borrar a placa. Configure o token pra ligar a ingestão.'
+      'Chegou carro pelo WhatsApp, mas nenhum detector de placa está configurado (PLATE_DETECTOR_URL/KEY) — não publico foto sem borrar a placa.'
     ).catch(() => {});
     return NextResponse.json(
       { error: 'ingestão desabilitada: detector de placa não configurado (privacidade)' },
       { status: 503 }
     );
   }
-  const detect: PlateDetector = createPlateRecognizerDetector(prToken);
 
   // decodifica as fotos (base64 → Buffer)
   const images: Buffer[] = [];

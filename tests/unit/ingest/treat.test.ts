@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import sharp from 'sharp';
-import { blurRegions, treatImage, type PlateDetector, type BBox } from '@/lib/ingest/treat';
+import { blurRegions, treatImage, createSelfHostedDetector, type PlateDetector, type BBox } from '@/lib/ingest/treat';
 
 // Gera uma foto sintética grande com uma "placa" (faixa ruidosa) numa posição
 // conhecida — assim dá pra provar o pipeline sem baixar modelo nem rede.
@@ -39,6 +39,27 @@ describe('treatImage', () => {
     // antes degradava publicando sem borrar (vazamento de placa); agora propaga o
     // erro → o pipeline descarta a foto em vez de subir placa à mostra.
     await expect(treatImage(foto, detector)).rejects.toThrow('api caiu');
+  });
+});
+
+describe('createSelfHostedDetector', () => {
+  it('normaliza as caixas de pixel para 0..1', async () => {
+    const fakeFetch = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ w: 1000, h: 500, boxes: [{ x1: 100, y1: 50, x2: 300, y2: 150 }] }),
+    }));
+    vi.stubGlobal('fetch', fakeFetch as unknown as typeof fetch);
+    const det = createSelfHostedDetector('http://detector/detect', 'segredo');
+    const boxes = await det(Buffer.from('fake-jpeg'));
+    expect(boxes).toEqual([{ x: 0.1, y: 0.1, w: 0.2, h: 0.2 }]);
+    vi.unstubAllGlobals();
+  });
+
+  it('erro do detector LANÇA (fail-closed: não publica sem borrar)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 502 })) as unknown as typeof fetch);
+    const det = createSelfHostedDetector('http://detector/detect', 'segredo');
+    await expect(det(Buffer.from('fake-jpeg'))).rejects.toThrow('502');
+    vi.unstubAllGlobals();
   });
 });
 

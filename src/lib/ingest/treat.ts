@@ -108,6 +108,35 @@ export async function treatImage(
 }
 
 /**
+ * Detector NOSSO (self-hosted): serviço de detecção de placa no VPS, exposto pelo bot
+ * em `api.iafirst.trade/api/detect-placa` (modelo ONNX próprio, sem API externa, sem
+ * custo por foto). Recebe o JPEG já orientado, devolve as caixas em pixel; aqui a gente
+ * normaliza pra 0..1 (o que o blurRegions espera). Erro -> lança (fail-closed).
+ */
+export function createSelfHostedDetector(url: string, apiKey: string): PlateDetector {
+  return async (jpeg: Buffer): Promise<BBox[]> => {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'Content-Type': 'application/octet-stream' },
+      body: new Uint8Array(jpeg),
+      signal: AbortSignal.timeout(40000),
+    });
+    if (!res.ok) throw new Error(`detector self-hosted ${res.status}`);
+    const j = (await res.json()) as {
+      w: number; h: number; boxes?: Array<{ x1: number; y1: number; x2: number; y2: number }>;
+    };
+    const W = j.w, H = j.h;
+    if (!W || !H) return [];
+    return (j.boxes ?? []).map((b) => ({
+      x: b.x1 / W,
+      y: b.y1 / H,
+      w: (b.x2 - b.x1) / W,
+      h: (b.y2 - b.y1) / H,
+    }));
+  };
+}
+
+/**
  * Detector de produção: Plate Recognizer (api.platerecognizer.com).
  * Precisa de PLATE_RECOGNIZER_TOKEN no runtime. Regiões default = Brasil.
  */

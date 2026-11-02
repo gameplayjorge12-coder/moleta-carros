@@ -4,17 +4,18 @@
 
 ---
 
-## ⚠️ ESTADO ATUAL (2026-09-14)
+## ⚠️ ESTADO ATUAL (atualizado 2026-10-21)
 
 ```
-✅ MVP COMPLETO — 25+ arquivos, ~3.000 LOC
-✅ Código TypeScript pronto pra rodar
-✅ Design System implementado (Paleta LARANJA)
-✅ Documentação completa (README + checklist + testes)
-⏳ BLOQUEANTE: Supabase setup (você faz)
-⏳ Testes locais (você faz)
-⏳ Vercel deploy (você faz)
+✅ NO AR em moletaveiculos.com (Next 14 + Supabase + Tailwind v3, laranja)
+✅ Repo git próprio (56 commits) · deploy automático na Vercel
+✅ Malha de rastreio ativa (copiloto do Marcelo)
+→ Detalhe vivo + histórico: memória moleta_estado_vivo + moleta_deploy_licoes
 ```
+
+> ⚠️ A documentação abaixo é de pré-lançamento (14/09) — mantida pelas REGRAS (não recriar/
+> refatorar/duplicar), mas o projeto JÁ está live. Para "onde paramos", ler a memória, não este bloco.
+> Contato do Marcelo: **confirmar com o Jorge** antes de usar (o número antigo aqui pode estar errado).
 
 ---
 

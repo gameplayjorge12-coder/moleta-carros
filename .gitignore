@@ -55,3 +55,7 @@ Thumbs.db
 /test-results
 /playwright-report
 tsconfig.tsbuildinfo
+
+.vercel
+
+supabase/.temp/

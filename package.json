@@ -21,6 +21,7 @@
     "@supabase/auth-helpers-nextjs": "^0.7.4",
     "@supabase/supabase-js": "^2.38.0",
     "@tailwindcss/forms": "^0.5.7",
+    "@vercel/analytics": "^2.0.1",
     "browser-image-compression": "^2.0.0",
     "clsx": "^2.0.0",
     "heic2any": "^0.0.4",
